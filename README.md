@@ -51,8 +51,8 @@ The **Drone Detection Network (SPARTN)** aims to address the growing challenges 
 ### Planned Milestones
 | **Milestone ID** | **Milestone Name**                         | **Date Scheduled** | **Notes**                                 |
 |------------------|-------------------------------------------|---------------------|------------------------------------------|
-| 1                | C++ Code for Audio Monitoring            | 1/27/25            | Initial code development for audio input. |
-| 2                | Audio Signal Processing for TDOA         | 2/3/25             | Enhance localization methods.             |
+| 1                | C++ Code for Audio Monitoring            | 1/27/25            | Mikhail completed on 1.24.25              |
+| 2                | Audio Signal Processing for TDOA         | 2/3/25             | Mikhail in process                        |
 | 3                | TDOA Algorithm Development               | 2/10/25            | Create and test TDOA localization.        |
 | 4                | Directional Antenna Construction         | 2/17/25            | Fabricate directional antennas.           |
 | 5                | Antenna Integration                      | 2/24/25            | Integrate with existing systems.          |
