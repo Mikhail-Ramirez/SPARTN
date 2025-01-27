@@ -1,0 +1,2 @@
+  224  2024-10-31 11:09:21 buildozer -v android debug
+  225  2024-10-31 12:08:17 touch done

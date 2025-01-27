@@ -1,0 +1,52 @@
+    1  2024-10-28 07:23:23 ls
+    2  2024-10-28 07:23:23 cd ..
+    3  2024-10-28 07:23:23 ls
+    4  2024-10-28 07:23:23 cd ..
+    5  2024-10-28 07:23:23 ls
+    6  2024-10-28 07:23:23 cd ..
+    7  2024-10-28 07:23:23 ls
+    8  2024-10-28 07:23:23 cd ..
+    9  2024-10-28 07:23:23 ls
+   10  2024-10-28 07:23:23 cd mnt/
+   11  2024-10-28 07:23:23 ls
+   12  2024-10-28 07:23:23 cd ..
+   13  2024-10-28 07:23:23 ls
+   14  2024-10-28 07:23:23 sudo apt install neovim
+   15  2024-10-28 07:23:23 nvim test
+   16  2024-10-28 07:23:23 sudo apt install neovim
+   17  2024-10-28 07:23:23 sudo add-apt-repository ppa:neovim-ppa/stable -y
+   18  2024-10-28 07:23:23 sudo apt update && sudo apt upgrade
+   19  2024-10-28 07:23:27 cd /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+   20  2024-10-28 07:23:30 cd ..
+   21  2024-10-28 07:23:33 ls
+   22  2024-10-28 07:23:35 cd m
+   23  2024-10-28 07:23:37 cd mnt/
+   24  2024-10-28 07:23:38 cd c/
+   25  2024-10-28 07:23:39 ls
+   26  2024-10-28 07:23:41 cd /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+   27  2024-10-28 07:23:44 cd Users/
+   28  2024-10-28 07:23:45 ls
+   29  2024-10-28 07:23:47 cd mikhail.ramirez/
+   30  2024-10-28 07:23:48 cd /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+   31  2024-10-28 07:23:50 ls
+   32  2024-10-28 07:23:59 cd Desktop/
+   33  2024-10-28 07:24:00 ls
+   34  2024-10-28 07:24:02 cd /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+   35  2024-10-28 07:24:28 ls -R /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools
+   36  2024-10-28 07:24:37 mkdir -p /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+   37  2024-10-28 07:24:37 mv /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/* /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest/
+   38  2024-10-28 07:24:43 unzip /mnt/c/Users/mikhail.ramirez/Desktop/DDN/commandlinetools-linux-11076708_latest.zip -d /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+   39  2024-10-28 07:24:54 cd /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+   40  2024-10-28 07:24:54 ./sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+   41  2024-10-28 07:25:22 mv /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest/cmdline-tools/* /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest/
+   42  2024-10-28 07:25:26 rmdir /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest/cmdline-tools
+   43  2024-10-28 07:25:30 cd /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+   44  2024-10-28 07:25:30 ./sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+   45  2024-10-28 07:25:46 sudo apt update
+   46  2024-10-28 07:26:00 sudo apt install openjdk-17-jdk
+   47  2024-10-28 07:26:38 java -version
+   48  2024-10-28 07:26:46 cd /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+   49  2024-10-28 07:26:46 ./sdkmanager "platform-tools" "platforms;android-30" "build-tools;30.0.3"
+   50  2024-10-28 09:11:03 history > history_terminal2.txt
+   51  2024-10-28 09:11:08 ls
+   52  2024-10-28 09:11:24 mv history_terminal2.txt ../../../../../../../

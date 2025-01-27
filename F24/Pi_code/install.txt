@@ -1,0 +1,11 @@
+sudo apt update
+sudo apt install libusb-1.0-0-dev
+git clone https://github.com/greatscottgadgets/hackrf.git
+cd hackrf/host
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+sudo ldconfig
+sudo cp /usr/local/bin/hackrf* /usr/bin/.

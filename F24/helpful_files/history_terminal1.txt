@@ -1,0 +1,101 @@
+    1  2024-10-28 07:02:22 ls
+    2  2024-10-28 07:02:22 cd ..
+    3  2024-10-28 07:02:22 ls
+    4  2024-10-28 07:02:22 cd ..
+    5  2024-10-28 07:02:22 ls
+    6  2024-10-28 07:02:22 cd ..
+    7  2024-10-28 07:02:22 ls
+    8  2024-10-28 07:02:22 cd ..
+    9  2024-10-28 07:02:22 ls
+   10  2024-10-28 07:02:22 cd mnt/
+   11  2024-10-28 07:02:22 ls
+   12  2024-10-28 07:02:22 cd ..
+   13  2024-10-28 07:02:22 ls
+   14  2024-10-28 07:02:22 sudo apt install neovim
+   15  2024-10-28 07:02:22 nvim test
+   16  2024-10-28 07:02:22 sudo apt install neovim
+   17  2024-10-28 07:02:22 sudo add-apt-repository ppa:neovim-ppa/stable -y
+   18  2024-10-28 07:02:22 sudo apt update && sudo apt upgrade
+   19  2024-10-28 07:02:25 ls
+   20  2024-10-28 07:02:27 cd ..
+   21  2024-10-28 07:02:27 ls
+   22  2024-10-28 07:02:30 cd ..
+   23  2024-10-28 07:02:30 ls
+   24  2024-10-28 07:02:34 cd m
+   25  2024-10-28 07:02:36 cd mnt/
+   26  2024-10-28 07:02:37 ls
+   27  2024-10-28 07:02:38 cd c
+   28  2024-10-28 07:02:39 ls
+   29  2024-10-28 07:02:42 cd Users/
+   30  2024-10-28 07:02:43 ls
+   31  2024-10-28 07:02:47 cd mikhail.ramirez/
+   32  2024-10-28 07:02:47 ls
+   33  2024-10-28 07:02:49 cd Des
+   34  2024-10-28 07:02:51 cd Desktop/
+   35  2024-10-28 07:02:53 cd DDN/
+   36  2024-10-28 07:02:54 ls
+   37  2024-10-28 07:03:03 sudo apt update
+   38  2024-10-28 07:03:31 sudo apt install python3 python3-pip git build-essential
+   39  2024-10-28 07:03:55 sudo apt update
+   40  2024-10-28 07:04:36 sudo apt install python3 python3-pip git build-essential
+   41  2024-10-28 07:05:13 pip3 install kivy buildozer
+   42  2024-10-28 07:05:47 buildozer init
+   43  2024-10-28 07:07:14 which buildozer
+   44  2024-10-28 07:07:18 pip show buildozer
+   45  2024-10-28 07:07:26 export PATH=$PATH:~/.local/bin
+   46  2024-10-28 07:07:29 buildozer init
+   47  2024-10-28 07:07:32 ls
+   48  2024-10-28 07:07:37 nvim buildozer.spec 
+   49  2024-10-28 07:07:46 sudo apt  install neovim
+   50  2024-10-28 07:08:11 mkdir ~/.config/nvim/
+   51  2024-10-28 07:08:20 touch ~/.config/nvim/
+   52  2024-10-28 07:08:36 mkdir /.config
+   53  2024-10-28 07:08:42 mkdir ~/.config
+   54  2024-10-28 07:08:47 mkdir ~/.config/nvim
+   55  2024-10-28 07:09:18 nano ~/.config/nvim/init.vim
+   56  2024-10-28 07:16:11 nvim buildozer.spec 
+   57  2024-10-28 07:17:05 echo 'export PATH=$PATH:~/.local/bin' >> ~/.bashrc
+   58  2024-10-28 07:17:05 source ~/.bashrc
+   59  2024-10-28 07:17:11 buildozer -v
+   60  2024-10-28 07:17:19 buildozer -v android debug
+   61  2024-10-28 07:17:41 pip install cython
+   62  2024-10-28 07:17:49 buildozer -v android debug
+   63  2024-10-28 07:18:11 sudo apt update
+   64  2024-10-28 07:18:13 sudo apt install default-jdk
+   65  2024-10-28 07:18:57 buildozer -v android debug
+   66  2024-10-28 07:19:36 sudo apt update
+   67  2024-10-28 07:19:37 sudo apt install unzip
+   68  2024-10-28 07:19:42 buildozer -v android debug
+   69  2024-10-28 07:21:27 ls
+   70  2024-10-28 07:22:05 mkdir -p /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+   71  2024-10-28 07:22:09 unzip commandlinetools-linux-11076708_latest.zip -d /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+   72  2024-10-28 07:22:17 buildozer -v android debug
+   73  2024-10-28 07:22:39 mkdir -p /home/mikha/.buildozer/android/platform/android-sdk/tools/bin
+   74  2024-10-28 07:22:43 ln -s /home/mikha/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager /home/mikha/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+   75  2024-10-28 07:22:47 buildozer -v android debug
+   76  2024-10-28 07:36:15 sudo apt update
+   77  2024-10-28 07:36:22 sudo apt install autoconf
+   78  2024-10-28 07:36:32 buildozer -v android debug
+   79  2024-10-28 07:38:51 sudo apt update
+   80  2024-10-28 07:38:52 sudo apt install libtool libltdl-dev
+   81  2024-10-28 07:39:02 buildozer -v android debug
+   82  2024-10-28 07:55:32 sudo apt update
+   83  2024-10-28 07:55:38 sudo apt install libffi-dev
+   84  2024-10-28 07:55:51 buildozer -v android debug
+   85  2024-10-28 07:57:01 sudo apt update
+   86  2024-10-28 07:57:02 sudo apt install libffi-dev libssl-dev
+   87  2024-10-28 07:57:11 buildozer android clean
+   88  2024-10-28 07:59:39 nvim buildozer.spec 
+   89  2024-10-28 07:59:47 buildozer -v android debug
+   90  2024-10-28 08:46:36 buildozer android clean
+   91  2024-10-28 08:50:13 buildozer -v android debug
+   92  2024-10-28 11:28:06 nvim buildozer.spec 
+   93  2024-10-28 11:28:39 buildozer -v android debug
+   94  2024-10-28 11:44:31 sudo apt update
+   95  2024-10-28 11:44:40 sudo apt install zip
+   96  2024-10-28 11:44:45 buildozer -v android debug
+   97  2024-10-28 12:04:29 history > history_terminal1.txt
+   98  2024-10-28 12:06:10 HISTTIMEFORMAT="%F %T "
+   99  2024-10-28 12:06:13 source ~/.bashrc
+  100  2024-10-28 12:06:17 history > history_output_with_timestamps.txt
+  101  2024-10-28 12:06:29 history > history_terminal1.txt
