@@ -1,4 +1,4 @@
-# Drone Detection Network (SPARTN) Project Proposal
+# Drone Detection Network (SPARTN)
 
 ## Project Summary
 The **Drone Detection Network (SPARTN)** aims to address the growing challenges posed by the rapid expansion of drone technology. By utilizing a low-cost, lightweight distributed sensor network, the system will detect and classify drones using a combination of radio frequency (RF) and acoustic signals. The network will provide real-time 3D positioning and classification (friendly or hostile) of drones via an Android tablet application, enhancing civilian safety and operational efficiency in restricted airspaces.
