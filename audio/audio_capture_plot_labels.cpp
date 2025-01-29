@@ -1,4 +1,4 @@
-// audio_capture_plot.cpp
+// audio_capture_plot_labeled.cpp
 
 #include <iostream>
 #include <vector>
@@ -15,7 +15,7 @@
 // Constants for audio
 #define SAMPLE_RATE 44100
 #define FRAMES_PER_BUFFER 256
-#define NUM_SECONDS 10
+#define NUM_SECONDS 10            // Changed from 1 to 10 seconds
 #define NUM_CHANNELS 1
 #define SAMPLE_TYPE paFloat32
 typedef float SAMPLE;
@@ -105,10 +105,10 @@ void plotAudioData(const std::vector<SAMPLE>& data, const std::string& filename)
     // Window dimensions
     const int WIDTH = 800;
     const int HEIGHT = 600;
-    const int MARGIN_LEFT = 50;
+    const int MARGIN_LEFT = 70;    // Increased to accommodate Y-axis label
     const int MARGIN_RIGHT = 50;
     const int MARGIN_TOP = 50;
-    const int MARGIN_BOTTOM = 50;
+    const int MARGIN_BOTTOM = 70;  // Increased to accommodate X-axis label
 
     // Initialize X11
     Display* display = XOpenDisplay(NULL);
@@ -131,6 +131,14 @@ void plotAudioData(const std::vector<SAMPLE>& data, const std::string& filename)
     GC gc = XCreateGC(display, win, 0, NULL);
     XSetForeground(display, gc, BlackPixel(display, screen));
 
+    // Load a font for labels
+    XFontStruct* font = XLoadQueryFont(display, "fixed");
+    if (!font) {
+        std::cerr << "Unable to load font. Labels may not appear correctly." << std::endl;
+    } else {
+        XSetFont(display, gc, font->fid);
+    }
+
     // Wait for the window to be exposed
     XEvent event;
     do {
@@ -144,6 +152,28 @@ void plotAudioData(const std::vector<SAMPLE>& data, const std::string& filename)
     // Y-axis
     XDrawLine(display, win, gc, MARGIN_LEFT, HEIGHT - MARGIN_BOTTOM,
               MARGIN_LEFT, MARGIN_TOP);
+
+    // Add axis labels
+    if (font) {
+        // Y-axis label: "Amplitude"
+        std::string yLabel = "Amplitude";
+        // Calculate position for Y-axis label (rotated)
+        // X11 does not support rotated text easily, so we'll place it vertically
+        // by drawing each character separately
+        int yLabelX = 10; // Left margin
+        int yLabelY = MARGIN_TOP + (HEIGHT - MARGIN_TOP - MARGIN_BOTTOM) / 2;
+        for (size_t i = 0; i < yLabel.size(); ++i) {
+            std::string letter(1, yLabel[i]);
+            XDrawString(display, win, gc, yLabelX, yLabelY + i * 12, letter.c_str(), 1);
+        }
+
+        // X-axis label: "Time (s)"
+        std::string xLabel = "Time (s)";
+        int xLabelWidth = XTextWidth(font, xLabel.c_str(), xLabel.size());
+        int xLabelX = MARGIN_LEFT + (WIDTH - MARGIN_LEFT - MARGIN_RIGHT) / 2 - xLabelWidth / 2;
+        int xLabelY = HEIGHT - 20; // Below the X-axis
+        XDrawString(display, win, gc, xLabelX, xLabelY, xLabel.c_str(), xLabel.size());
+    }
 
     // Plot the audio waveform
     size_t dataSize = data.size();
@@ -168,22 +198,63 @@ void plotAudioData(const std::vector<SAMPLE>& data, const std::string& filename)
     int plotWidth = WIDTH - MARGIN_LEFT - MARGIN_RIGHT;
     int plotHeight = HEIGHT - MARGIN_TOP - MARGIN_BOTTOM;
 
+    // Calculate total time in seconds
+    double totalTime = static_cast<double>(dataSize) / SAMPLE_RATE;
+
     // Plot each sample
     for (size_t i = 1; i < dataSize; ++i) {
-        int x1 = MARGIN_LEFT + static_cast<int>((i - 1) * plotWidth / static_cast<double>(dataSize - 1));
+        double currentTime = static_cast<double>(i) / SAMPLE_RATE;
+        double prevTime = static_cast<double>(i - 1) / SAMPLE_RATE;
+
+        int x1 = MARGIN_LEFT + static_cast<int>((prevTime / totalTime) * plotWidth);
         int y1 = MARGIN_TOP + static_cast<int>((1.0 - (data[i - 1] / maxSample)) * plotHeight / 2);
-        int x2 = MARGIN_LEFT + static_cast<int>(i * plotWidth / static_cast<double>(dataSize - 1));
+        int x2 = MARGIN_LEFT + static_cast<int>((currentTime / totalTime) * plotWidth);
         int y2 = MARGIN_TOP + static_cast<int>((1.0 - (data[i] / maxSample)) * plotHeight / 2);
         XDrawLine(display, win, gc, x1, y1, x2, y2);
+    }
+
+    // Optional: Add tick marks and numerical labels (basic implementation)
+    if (font) {
+        // X-axis ticks and labels (every 2 seconds)
+        int numXTicks = 5;
+        for (int i = 0; i <= numXTicks; ++i) {
+            double tickTime = (totalTime / numXTicks) * i;
+            int x = MARGIN_LEFT + static_cast<int>((tickTime / totalTime) * plotWidth);
+            int yStart = HEIGHT - MARGIN_BOTTOM;
+            int yEnd = HEIGHT - MARGIN_BOTTOM + 5;
+            XDrawLine(display, win, gc, x, yStart, x, yEnd);
+
+            // Draw tick label
+            std::string tickLabel = std::to_string(static_cast<int>(tickTime));
+            int labelWidth = XTextWidth(font, tickLabel.c_str(), tickLabel.size());
+            int labelX = x - labelWidth / 2;
+            int labelY = yEnd + 15;
+            XDrawString(display, win, gc, labelX, labelY, tickLabel.c_str(), tickLabel.size());
+        }
+
+        // Y-axis ticks and labels (every 0.5 amplitude units)
+        int numYTicks = 4;
+        for (int i = 0; i <= numYTicks; ++i) {
+            double tickAmplitude = (static_cast<double>(i) / numYTicks) * maxSample;
+            int y = MARGIN_TOP + static_cast<int>((1.0 - (tickAmplitude / maxSample)) * plotHeight / 2);
+            int xStart = MARGIN_LEFT;
+            int xEnd = MARGIN_LEFT - 5;
+            XDrawLine(display, win, gc, xEnd, y, xStart, y);
+
+            // Draw tick label
+            std::string tickLabel = std::to_string(tickAmplitude);
+            int labelWidth = XTextWidth(font, tickLabel.c_str(), tickLabel.size());
+            int labelX = xEnd - labelWidth - 5;
+            int labelY = y + 5;
+            XDrawString(display, win, gc, labelX, labelY, tickLabel.c_str(), tickLabel.size());
+        }
     }
 
     // Flush the drawing
     XFlush(display);
 
-    // Optional: Save the plot as an image using XImage (requires additional implementation)
-    // For simplicity, this example only displays the plot in a window.
-
-    std::cout << "Plot displayed. Close the window or press a key to exit." << std::endl;
+    // Inform the user
+    std::cout << "Plot displayed with axis labels. Close the window or press a key to exit." << std::endl;
 
     // Wait for a key press or window close
     bool done = false;
@@ -195,6 +266,9 @@ void plotAudioData(const std::vector<SAMPLE>& data, const std::string& filename)
     }
 
     // Cleanup
+    if (font) {
+        XFreeFont(display, font);
+    }
     XFreeGC(display, gc);
     XDestroyWindow(display, win);
     XCloseDisplay(display);
@@ -247,7 +321,7 @@ int main() {
         return 1;
     }
 
-    std::cout << "Recording started. Please speak into the microphone..." << std::endl;
+    std::cout << "Recording started for " << NUM_SECONDS << " seconds. Please speak into the microphone..." << std::endl;
 
     // Record for NUM_SECONDS seconds
     std::this_thread::sleep_for(std::chrono::seconds(NUM_SECONDS));
@@ -271,7 +345,7 @@ int main() {
     }
 
     // Plot the audio data
-    plotAudioData(data.samples, "audio_plot.png");
+    plotAudioData(data.samples, "audio_plot_labeled.png");
 
     return 0;
 }
