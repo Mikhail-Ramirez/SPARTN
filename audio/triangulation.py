@@ -13,22 +13,22 @@ tower3 = np.array([0, 1])
 sound_source = np.array([0.75, 1])
 
 # Step 1: Calculate distances from the sound source to each tower
-distance_to_tower1 = np.linalg.norm(sound_source - tower1)
-distance_to_tower2 = np.linalg.norm(sound_source - tower2)
-distance_to_tower3 = np.linalg.norm(sound_source - tower3)
+#distance_to_tower1 = np.linalg.norm(sound_source - tower1)
+#distance_to_tower2 = np.linalg.norm(sound_source - tower2)
+#distance_to_tower3 = np.linalg.norm(sound_source - tower3)
 
-print(f"Distance to Tower 1: {distance_to_tower1:.2f} meters")
-print(f"Distance to Tower 2: {distance_to_tower2:.2f} meters")
-print(f"Distance to Tower 3: {distance_to_tower3:.2f} meters")
+#print(f"Distance to Tower 1: {distance_to_tower1:.2f} meters")
+#print(f"Distance to Tower 2: {distance_to_tower2:.2f} meters")
+#print(f"Distance to Tower 3: {distance_to_tower3:.2f} meters")
 
 # Step 2: Calculate arrival times at each tower
-arrival_time_tower1 = distance_to_tower1 / speed_of_sound
-arrival_time_tower2 = distance_to_tower2 / speed_of_sound
-arrival_time_tower3 = distance_to_tower3 / speed_of_sound
+arrival_time_tower1 = 0.003644
+arrival_time_tower2 = 0.003005
+arrival_time_tower3 = 0.002187 #solved for above
 
-print(f"Arrival time at Tower 1: {arrival_time_tower1:.6f} seconds")
-print(f"Arrival time at Tower 2: {arrival_time_tower2:.6f} seconds")
-print(f"Arrival time at Tower 3: {arrival_time_tower3:.6f} seconds")
+#print(f"Arrival time at Tower 1: {arrival_time_tower1:.6f} seconds")
+#print(f"Arrival time at Tower 2: {arrival_time_tower2:.6f} seconds")
+#print(f"Arrival time at Tower 3: {arrival_time_tower3:.6f} seconds")
 
 # Step 3: Use arrival times to estimate the location of the sound source
 # We'll use trilateration to estimate the position of the sound source
