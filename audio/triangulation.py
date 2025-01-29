@@ -1,117 +1,93 @@
-# dual_mic_tdoa_localization.py
-
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import fsolve
 
 # Speed of sound in meters per second
-SPEED_OF_SOUND = 343
+speed_of_sound = 343
 
-# Microphone positions (in meters)
-mic_positions = {
-    'Mic1': (0.0, 0.0),  # Tower1
-    'Mic2': (1.0, 0.0),  # Tower2
-    'Mic3': (0.0, 1.0)   # Tower3
-}
+# Positions of the towers (in meters)
+tower1 = np.array([0, 0])
+tower2 = np.array([1, 0])
+tower3 = np.array([0, 1])
 
-# Given Sound Source Position (for validation)
-source_position = (0.75, 1.0)
+# Position of the sound source (in meters)
+sound_source = np.array([0.75, 1])
 
-# Calculate distances from source to each mic
-def calculate_distances(source, mics):
-    distances = {}
-    for mic, pos in mics.items():
-        distances[mic] = np.sqrt((source[0] - pos[0])**2 + (source[1] - pos[1])**2)
-    return distances
+# Step 1: Calculate distances from the sound source to each tower
+distance_to_tower1 = np.linalg.norm(sound_source - tower1)
+distance_to_tower2 = np.linalg.norm(sound_source - tower2)
+distance_to_tower3 = np.linalg.norm(sound_source - tower3)
 
-# Calculate TDoA between pairs
-def calculate_tdoa(distances, mics, pair1, pair2):
-    delta_d = distances[pair1] - distances[pair2]
-    delta_t = delta_d / SPEED_OF_SOUND
-    return delta_t
+print(f"Distance to Tower 1: {distance_to_tower1:.2f} meters")
+print(f"Distance to Tower 2: {distance_to_tower2:.2f} meters")
+print(f"Distance to Tower 3: {distance_to_tower3:.2f} meters")
 
-# Define the system of equations based on TDoA
-def equations(vars, mics, delta_d21, delta_d31):
-    x, y = vars
-    # Distances from source to each mic
-    d1 = np.sqrt((x - mics['Mic1'][0])**2 + (y - mics['Mic1'][1])**2)
-    d2 = np.sqrt((x - mics['Mic2'][0])**2 + (y - mics['Mic2'][1])**2)
-    d3 = np.sqrt((x - mics['Mic3'][0])**2 + (y - mics['Mic3'][1])**2)
-    
-    # Equations based on distance differences
-    eq1 = d2 - d1 - delta_d21
-    eq2 = d3 - d1 - delta_d31
-    return (eq1, eq2)
+# Step 2: Calculate arrival times at each tower
+arrival_time_tower1 = distance_to_tower1 / speed_of_sound
+arrival_time_tower2 = distance_to_tower2 / speed_of_sound
+arrival_time_tower3 = distance_to_tower3 / speed_of_sound
 
-def main():
-    # Step 1: Calculate actual distances (for validation)
-    actual_distances = calculate_distances(source_position, mic_positions)
-    print("Actual Distances from Source to Mics:")
-    for mic, dist in actual_distances.items():
-        print(f"{mic}: {dist:.3f} meters")
-    
-    # Step 2: Calculate TDoA (distance differences)
-    delta_d21 = actual_distances['Mic2'] - actual_distances['Mic1']
-    delta_d31 = actual_distances['Mic3'] - actual_distances['Mic1']
-    
-    # Step 3: Convert TDoA to distance differences (if starting from TDoA)
-    # Here, we have distance differences directly
-    # If starting from TDoA, use: delta_d = delta_t * SPEED_OF_SOUND
-    
-    print(f"\nDistance Differences:")
-    print(f"Delta D21 (Mic2 - Mic1): {delta_d21:.3f} meters")
-    print(f"Delta D31 (Mic3 - Mic1): {delta_d31:.3f} meters")
-    
-    # Step 4: Initial guess for (x, y)
-    initial_guess = (0.5, 0.5)
-    
-    # Step 5: Solve the equations
-    solution = fsolve(equations, initial_guess, args=(mic_positions, delta_d21, delta_d31))
-    estimated_x, estimated_y = solution
-    print(f"\nEstimated Source Position: ({estimated_x:.3f}, {estimated_y:.3f}) meters")
-    
-    # Step 6: Plotting
-    fig, ax = plt.subplots(figsize=(8, 8))
-    
-    # Plot microphones
-    for mic, pos in mic_positions.items():
-        ax.plot(pos[0], pos[1], 'bo')
-        ax.text(pos[0]+0.02, pos[1]+0.02, mic)
-    
-    # Plot estimated source position
-    ax.plot(estimated_x, estimated_y, 'ro', label='Estimated Source')
-    ax.text(estimated_x+0.02, estimated_y+0.02, 'Source')
-    
-    # Plot actual source position
-    ax.plot(source_position[0], source_position[1], 'gx', label='Actual Source')
-    ax.text(source_position[0]+0.02, source_position[1]+0.02, 'Actual Source')
-    
-    # Draw circles representing distance differences
-    # Circle for Mic1
-    circle1 = plt.Circle(mic_positions['Mic1'], actual_distances['Mic1'], color='b', fill=False, linestyle='--', label='Mic1 Radius')
-    ax.add_artist(circle1)
-    
-    # Circle for Mic2
-    circle2 = plt.Circle(mic_positions['Mic2'], actual_distances['Mic2'], color='b', fill=False, linestyle='--', label='Mic2 Radius')
-    ax.add_artist(circle2)
-    
-    # Circle for Mic3
-    circle3 = plt.Circle(mic_positions['Mic3'], actual_distances['Mic3'], color='b', fill=False, linestyle='--', label='Mic3 Radius')
-    ax.add_artist(circle3)
-    
-    # Setting plot limits
-    ax.set_xlim(-0.5, 1.5)
-    ax.set_ylim(-0.5, 1.5)
-    
-    # Labels and title
-    ax.set_xlabel('X Position (meters)')
-    ax.set_ylabel('Y Position (meters)')
-    ax.set_title('Sound Source Localization using TDoA')
-    ax.legend()
-    ax.grid(True)
-    
-    plt.show()
+print(f"Arrival time at Tower 1: {arrival_time_tower1:.6f} seconds")
+print(f"Arrival time at Tower 2: {arrival_time_tower2:.6f} seconds")
+print(f"Arrival time at Tower 3: {arrival_time_tower3:.6f} seconds")
 
-if __name__ == "__main__":
-    main()
+# Step 3: Use arrival times to estimate the location of the sound source
+# We'll use trilateration to estimate the position of the sound source
+# Trilateration is the process of determining absolute or relative locations of points by measurement of distances.
 
+# Function to perform trilateration
+def trilaterate(tower1, tower2, tower3, r1, r2, r3):
+    A = 2 * (tower2 - tower1)
+    B = 2 * (tower3 - tower1)
+    C = r1**2 - r2**2 - np.dot(tower1, tower1) + np.dot(tower2, tower2)
+    D = r1**2 - r3**2 - np.dot(tower1, tower1) + np.dot(tower3, tower3)
+    
+    # Solving the system of equations
+    A_matrix = np.array([A, B]).T
+    b_vector = np.array([C, D])
+    
+    # Solving for the position of the sound source
+    estimated_position = np.linalg.solve(A_matrix, b_vector)
+    return estimated_position
+
+# Estimated distances based on arrival times
+r1 = arrival_time_tower1 * speed_of_sound
+r2 = arrival_time_tower2 * speed_of_sound
+r3 = arrival_time_tower3 * speed_of_sound
+
+# Estimate the position of the sound source
+estimated_position = trilaterate(tower1, tower2, tower3, r1, r2, r3)
+
+print(f"Estimated position of the sound source: ({estimated_position[0]:.2f}, {estimated_position[1]:.2f}) meters")
+
+# Step 4: Plot the results
+fig, ax = plt.subplots()
+
+# Plot the towers
+ax.plot(tower1[0], tower1[1], 'ro', label='Tower 1')
+ax.plot(tower2[0], tower2[1], 'go', label='Tower 2')
+ax.plot(tower3[0], tower3[1], 'bo', label='Tower 3')
+
+# Plot the sound source
+ax.plot(sound_source[0], sound_source[1], 'kx', label='Actual Sound Source')
+ax.plot(estimated_position[0], estimated_position[1], 'mx', label='Estimated Sound Source')
+
+# Plot circles representing the distances from each tower
+circle1 = plt.Circle(tower1, r1, color='r', fill=False, label='Distance from Tower 1')
+circle2 = plt.Circle(tower2, r2, color='g', fill=False, label='Distance from Tower 2')
+circle3 = plt.Circle(tower3, r3, color='b', fill=False, label='Distance from Tower 3')
+
+ax.add_artist(circle1)
+ax.add_artist(circle2)
+ax.add_artist(circle3)
+
+# Set plot limits and labels
+ax.set_xlim(-1, 2)
+ax.set_ylim(-1, 2)
+ax.set_aspect('equal', 'box')
+ax.set_xlabel('X position (meters)')
+ax.set_ylabel('Y position (meters)')
+#ax.legend()
+ax.grid(True)
+
+plt.title('Sound Source Localization')
+plt.show()
