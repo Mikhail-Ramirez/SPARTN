@@ -29,6 +29,7 @@ The **Drone Detection Network (SPARTN - Sensor Platform for Acoustic and Radio T
 
 ## Proposed Future Functionality
 ### Key Innovations
+![SPARTN Logo](assets/SPARTN.png)
 1. **Enhanced User Interface**:
    - Real-time drone location and classification display on the tablet.
    - Debugging interface for system optimization.
