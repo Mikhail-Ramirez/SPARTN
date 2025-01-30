@@ -54,7 +54,7 @@ The **Drone Detection Network (SPARTN - Sensor Platform for Acoustic and Radio T
 |------------------|-------------------------------------------|---------------------|------------------------------------------|
 | 1                | C++ Code for Audio Monitoring            | 1/27/25            | Mikhail completed on 1.24.25              |
 | 2                | Audio Signal Processing for TDOA         | 2/3/25             | Mikhail in process                        |
-| 3                | TDOA Algorithm Development               | 2/10/25            | Create and test TDOA localization.        |
+| 3                | TDOA Algorithm Development               | 2/10/25            | Mikhail implemented in Python 1.30 - Nick adapted to CPP 1/30|
 | 4                | Directional Antenna Construction         | 2/17/25            | Fabricate directional antennas.           |
 | 5                | Antenna Integration                      | 2/24/25            | Integrate with existing systems.          |
 | 6                | AI Audio Classification Model            | 3/3/25             | Train AI for drone type classification.   |
