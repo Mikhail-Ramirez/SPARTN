@@ -1,7 +1,7 @@
-# Drone Detection Network (SPARTN) Project Proposal
+# Drone Detection Network (SPARTN)
 
 ## Project Summary
-The **Drone Detection Network (SPARTN)** aims to address the growing challenges posed by the rapid expansion of drone technology. By utilizing a low-cost, lightweight distributed sensor network, the system will detect and classify drones using a combination of radio frequency (RF) and acoustic signals. The network will provide real-time 3D positioning and classification (friendly or hostile) of drones via an Android tablet application, enhancing civilian safety and operational efficiency in restricted airspaces.
+The **Drone Detection Network (SPARTN - Sensor Platform for Acoustic and Radio Tracking Network)** aims to address the growing challenges posed by the rapid expansion of drone technology. By utilizing a low-cost, lightweight distributed sensor network, the system will detect and classify drones using a combination of radio frequency (RF) and acoustic signals. The network will provide real-time 3D positioning and classification (friendly or hostile) of drones via an Android tablet application, enhancing civilian safety and operational efficiency in restricted airspaces.
 
 ---
 
@@ -29,6 +29,7 @@ The **Drone Detection Network (SPARTN)** aims to address the growing challenges 
 
 ## Proposed Future Functionality
 ### Key Innovations
+![SPARTN Logo](assets/SPARTN.png)
 1. **Enhanced User Interface**:
    - Real-time drone location and classification display on the tablet.
    - Debugging interface for system optimization.
@@ -53,7 +54,7 @@ The **Drone Detection Network (SPARTN)** aims to address the growing challenges 
 |------------------|-------------------------------------------|---------------------|------------------------------------------|
 | 1                | C++ Code for Audio Monitoring            | 1/27/25            | Mikhail completed on 1.24.25              |
 | 2                | Audio Signal Processing for TDOA         | 2/3/25             | Mikhail in process                        |
-| 3                | TDOA Algorithm Development               | 2/10/25            | Create and test TDOA localization.        |
+| 3                | TDOA Algorithm Development               | 2/10/25            | Mikhail implemented in Python 1.30 - Nick adapted to CPP 1/30|
 | 4                | Directional Antenna Construction         | 2/17/25            | Fabricate directional antennas.           |
 | 5                | Antenna Integration                      | 2/24/25            | Integrate with existing systems.          |
 | 6                | AI Audio Classification Model            | 3/3/25             | Train AI for drone type classification.   |
