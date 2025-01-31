@@ -3,14 +3,15 @@
 class Tower {
 
 public:
+	Tower();
 	Tower(double, double);
 	void setXY(double, double);
 	
-	double measureMic();
-	double measurePower();
+	double measureVol();
+	double measurePow();
 
 	double getVol();
-	double getPow()
+	double getPow();
 	double getX();
 	double getY();
 

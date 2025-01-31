@@ -1,7 +1,9 @@
 #include "Tower.h"
 using namespace std;
 
-Tower::Tower(double x = 0, double y = 0) {
+Tower::Tower() {} //Default constructor
+
+Tower::Tower(double x, double y) {
 	setXY(x, y);
 }
 
@@ -10,14 +12,14 @@ void Tower::setXY(double x, double y) {
 	towerY = y;
 }
 
-double Tower::measurePower() {
+double Tower::measurePow() {
 	//No idea how this will work yet.
 	//Return 0.5 as a default.
 	towerPower = 0.5;
 	return towerPower;
 }
 
-double Tower::measureMic() {
+double Tower::measureVol() {
 	//No idea how this will work yet.
 	//Return 0.4 as a default.
 	towerVolume = 0.4;
