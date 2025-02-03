@@ -13,4 +13,4 @@
 .externalNativeBuild
 .cxx
 local.properties
-rf/Spheres/Towers/.vs/Towers/v17/Browse.VC.opendb
+*.opendb
