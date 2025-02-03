@@ -3,7 +3,7 @@ import math
 import time
 
 # Configuration
-SERVER_IP = '10.0.2.16'  # IP address of reciver
+SERVER_IP = '100.76.15.100'  # IP address of reciver
 SERVER_PORT = 39439         # Port should match the app's listening port
 RADIUS = 25                # Radius of the circle
 FREQUENCY = 30             # Updates per second (30 Hz)
