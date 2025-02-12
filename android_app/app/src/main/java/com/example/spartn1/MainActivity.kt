@@ -154,8 +154,16 @@ fun MySplitScreen() {
             }
         }
     } else {
-        // BLUE SCREEN: New UI with IP input and buttons for sending coordinates
-        BlueScreen(onSwitchScreen = { showBlueScreen = false })
+        // BLUE SCREEN: Pass the current coordinate inputs for sending
+        BlueScreen(
+            onSwitchScreen = { showBlueScreen = false },
+            x1 = x1.value.text,
+            y1 = y1.value.text,
+            x2 = x2.value.text,
+            y2 = y2.value.text,
+            x3 = x3.value.text,
+            y3 = y3.value.text
+        )
     }
 }
 
@@ -190,16 +198,25 @@ fun CoordinateRow(
 }
 
 /**
- * New composable for the blue screen.
- * It includes:
+ * Blue screen composable.
+ * Now includes:
  * - A button to switch back to the green screen.
  * - An input field to specify the destination IP.
- * - Three buttons to send coordinate pairs "1,1", "2,2", and "3,3".
+ * - Three buttons labeled "Update location 1", "Update location 2", "Update location 3".
+ *   Each sends the corresponding x,y values from the green screen.
  */
 @Composable
-fun BlueScreen(onSwitchScreen: () -> Unit) {
+fun BlueScreen(
+    onSwitchScreen: () -> Unit,
+    x1: String,
+    y1: String,
+    x2: String,
+    y2: String,
+    x3: String,
+    y3: String
+) {
     val coroutineScope = rememberCoroutineScope()
-    var destIp by remember { mutableStateOf(TextFieldValue("100.76.15.100")) } // default value; change as needed
+    var destIp by remember { mutableStateOf(TextFieldValue("100.76.15.100")) } // default value
 
     Column(
         modifier = Modifier
@@ -227,13 +244,14 @@ fun BlueScreen(onSwitchScreen: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(16.dp))
         
-        // Button to send "1,1"
+        // Button to update location 1 using the green screen's x1,y1
         Button(
             onClick = {
                 coroutineScope.launch(Dispatchers.IO) {
                     try {
+                        val message = "$x1,$y1\n"
                         Socket(destIp.text, 39439).use { socket ->
-                            socket.getOutputStream().write("1,1\n".toByteArray())
+                            socket.getOutputStream().write(message.toByteArray())
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -242,17 +260,18 @@ fun BlueScreen(onSwitchScreen: () -> Unit) {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Send 1,1")
+            Text("Update location 1")
         }
         Spacer(modifier = Modifier.height(8.dp))
         
-        // Button to send "2,2"
+        // Button to update location 2 using x2,y2
         Button(
             onClick = {
                 coroutineScope.launch(Dispatchers.IO) {
                     try {
+                        val message = "$x2,$y2\n"
                         Socket(destIp.text, 39439).use { socket ->
-                            socket.getOutputStream().write("2,2\n".toByteArray())
+                            socket.getOutputStream().write(message.toByteArray())
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -261,17 +280,18 @@ fun BlueScreen(onSwitchScreen: () -> Unit) {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Send 2,2")
+            Text("Update location 2")
         }
         Spacer(modifier = Modifier.height(8.dp))
         
-        // Button to send "3,3"
+        // Button to update location 3 using x3,y3
         Button(
             onClick = {
                 coroutineScope.launch(Dispatchers.IO) {
                     try {
+                        val message = "$x3,$y3\n"
                         Socket(destIp.text, 39439).use { socket ->
-                            socket.getOutputStream().write("3,3\n".toByteArray())
+                            socket.getOutputStream().write(message.toByteArray())
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -280,11 +300,10 @@ fun BlueScreen(onSwitchScreen: () -> Unit) {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Send 3,3")
+            Text("Update location 3")
         }
     }
 }
-
 
 /**
  * Draw green plane, show user coords as towers, plus a red dot for liveCoord.
