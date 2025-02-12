@@ -65,14 +65,11 @@ fun MySplitScreen() {
     val y2 = remember { mutableStateOf(TextFieldValue("0")) }
     val x3 = remember { mutableStateOf(TextFieldValue("0")) }
     val y3 = remember { mutableStateOf(TextFieldValue("0")) }
-    val x4 = remember { mutableStateOf(TextFieldValue("0")) }
-    val y4 = remember { mutableStateOf(TextFieldValue("0")) }
 
     val userCoords = listOf(
         x1.value.text to y1.value.text,
         x2.value.text to y2.value.text,
-        x3.value.text to y3.value.text,
-        x4.value.text to y4.value.text
+        x3.value.text to y3.value.text
     ).map { (xs, ys) ->
         (xs.toFloatOrNull() ?: 0f) to (ys.toFloatOrNull() ?: 0f)
     }
@@ -130,7 +127,6 @@ fun MySplitScreen() {
                         CoordinateRow("Coord 1", x1, y1)
                         CoordinateRow("Coord 2", x2, y2)
                         CoordinateRow("Coord 3", x3, y3)
-                        CoordinateRow("Coord 4", x4, y4)
                     }
 
                     // Right Pane: tower plane
