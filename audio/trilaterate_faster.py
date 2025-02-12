@@ -7,7 +7,7 @@ import threading
 
 # **🔹 CONSTANTS**
 SAMPLE_RATE = 48000  # Hz
-DURATION = 2  # **Fixed at 2 seconds**
+DURATION = 10  # **Fixed at 2 seconds**
 CHANNELS = 1  # **Mono Recording**
 SPEED_OF_SOUND = 343  # m/s
 
