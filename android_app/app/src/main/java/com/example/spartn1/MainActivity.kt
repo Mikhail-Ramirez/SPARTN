@@ -37,6 +37,8 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.*
 import kotlin.math.roundToInt
+// Add necessary imports at the top:
+import java.net.Socket
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -152,26 +154,8 @@ fun MySplitScreen() {
             }
         }
     } else {
-        // BLUE SCREEN
-        Row(modifier = Modifier.fillMaxSize()) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Button(onClick = { showBlueScreen = false }) {
-                    Text("Switch to Green Screen")
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .background(Color.Blue)
-            )
-        }
+        // BLUE SCREEN: New UI with IP input and buttons for sending coordinates
+        BlueScreen(onSwitchScreen = { showBlueScreen = false })
     }
 }
 
@@ -204,6 +188,103 @@ fun CoordinateRow(
         }
     }
 }
+
+/**
+ * New composable for the blue screen.
+ * It includes:
+ * - A button to switch back to the green screen.
+ * - An input field to specify the destination IP.
+ * - Three buttons to send coordinate pairs "1,1", "2,2", and "3,3".
+ */
+@Composable
+fun BlueScreen(onSwitchScreen: () -> Unit) {
+    val coroutineScope = rememberCoroutineScope()
+    var destIp by remember { mutableStateOf(TextFieldValue("100.76.15.100")) } // default value; change as needed
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Blue)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Button to switch back to the green screen
+        Button(
+            onClick = { onSwitchScreen() },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Switch to Green Screen")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Input field for the destination IP address
+        TextField(
+            value = destIp,
+            onValueChange = { destIp = it },
+            label = { Text("Destination IP") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // Button to send "1,1"
+        Button(
+            onClick = {
+                coroutineScope.launch(Dispatchers.IO) {
+                    try {
+                        Socket(destIp.text, 39439).use { socket ->
+                            socket.getOutputStream().write("1,1\n".toByteArray())
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Send 1,1")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        // Button to send "2,2"
+        Button(
+            onClick = {
+                coroutineScope.launch(Dispatchers.IO) {
+                    try {
+                        Socket(destIp.text, 39439).use { socket ->
+                            socket.getOutputStream().write("2,2\n".toByteArray())
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Send 2,2")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        // Button to send "3,3"
+        Button(
+            onClick = {
+                coroutineScope.launch(Dispatchers.IO) {
+                    try {
+                        Socket(destIp.text, 39439).use { socket ->
+                            socket.getOutputStream().write("3,3\n".toByteArray())
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Send 3,3")
+        }
+    }
+}
+
 
 /**
  * Draw green plane, show user coords as towers, plus a red dot for liveCoord.
