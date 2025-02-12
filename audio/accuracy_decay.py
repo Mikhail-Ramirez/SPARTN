@@ -40,7 +40,7 @@ def nonlinear_trilaterate(r1, r2, r3, initial_guess):
 # Generate True Source Positions
 # -------------------------------
 # 1000 source positions along the line from (1,1) to (100,100)
-points = np.linspace(1, 100, 1000)
+points = np.linspace(1, 1000, 1000)
 true_sources = np.column_stack((points, points))  # shape (1000, 2)
 
 # Preallocate arrays for:
@@ -141,12 +141,12 @@ ax2.legend()
 plt.suptitle("Trilateration Accuracy & Confidence Circles\n(±{:.6f} s Perturbation per Mic)".format(delta_t), fontsize=14)
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 plt.savefig('trilateration_accuracy.png', dpi=300)
-print("Plot saved as 'trilateration_accuracy.png'.")
+print("Plot saved as '1000m_trilateration_accuracy.png'.")
 
 # -------------------------------
 # Write Summary Error Metrics to a Text File
 # -------------------------------
-summary_filename = "trilateration_error_summary.txt"
+summary_filename = "1000m_trilateration_error_summary.txt"
 with open(summary_filename, "w") as f:
     f.write("Source_Distance(m), Centroid_Error(m), Confidence_Radius(m)\n")
     for d, cent_err, conf_rad in zip(true_source_distances, centroid_errors, confidence_radii):
