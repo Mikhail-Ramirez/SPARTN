@@ -54,10 +54,7 @@ The **Drone Detection Network (SPARTN - Sensor Platform for Acoustic and Radio T
 |------------------|-------------------------------------------|---------------------|------------------------------------------|
 | 1                | C++ Code for Audio Monitoring            | 1/27/25            | Mikhail completed on 1.24.25              |
 | 2                | Audio Signal Processing for TDOA         | 2/3/25             | Mikhail - Python code that correlates and gives a TDoA of each sound, but need more testing to verify. |
-| 3                | TDOA Algorithm Development               | 2/10/25            | 
-Mikhail implemented in Python 1.30(Giving location predictions on 2.2) - Nick adapted to CPP 1/30.   
-Fidelity testing done on 2/11. Functionl implmentation with fidelity information attempted on 2/12. more testing fill follow.|
-
+| 3                | TDOA Algorithm Development               | 2/10/25            | Mikhail implemented in Python 1.30(Giving location predictions on 2.2) - Nick adapted to CPP 1/30.   Fidelity testing done on 2/11. Functionl implmentation with fidelity information attempted on 2/12. more testing fill follow.|
 | 4                | Directional Antenna Construction         | 2/17/25            | Fabricate directional antennas.           |
 | 5                | Antenna Integration                      | 2/24/25            | Integrate with existing systems.          |
 | 6                | AI Audio Classification Model            | 3/3/25             | Real-time binary prediction completed in MATLAB by Nick on 2/5   |
