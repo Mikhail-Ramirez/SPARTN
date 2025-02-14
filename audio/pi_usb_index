@@ -1,7 +1,0 @@
-|--------------------|
-|    |       |         |
-| eth|       |ind 2  |
-|--------------------|
-
-
-lsusb will give device numbers based on order plugged in
