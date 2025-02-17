@@ -1,0 +1,4 @@
+make a new button to replace the app current config towers
+this will init and say we have connection
+
+then after reciving the asla indexes a second button will be pressed to send the locaitons and start teh pi sampling
