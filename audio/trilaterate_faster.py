@@ -13,9 +13,9 @@ SPEED_OF_SOUND = 343  # m/s
 
 # **Microphone positions (ALSA card numbers → Physical positions)**
 MIC_POSITIONS = {
-    4: np.array([0, 0]),  # **Mic 4**
-    2: np.array([1, 0]),  # **Mic 2**
-    3: np.array([0, 1])   # **Mic 3**
+    2: np.array([0,0]),  # **Mic 4**
+    3: np.array([3.6576,3.6576]),  # **Mic 2**
+    4: np.array([7.3152, 0])   # **Mic 3**
 }
 
 # **Recording Order**
@@ -238,8 +238,8 @@ def plot_localization(tower1, tower2, tower3, estimated_position):
     plt.title("Sound Source Localization")
     plt.grid(True)
     plt.legend()
-    plt.savefig("sound_source_localization_debug.png")
-    print("✅ Saved: sound_source_localization_debug.png")
+    plt.savefig("trial_sound_source_localization_debug.png")
+    print("✅ Saved: trial_sound_source_localization_debug.png")
     plt.show()
 
 

@@ -6,29 +6,28 @@ import time
 import csv
 import os
 import socket
-from moment2 import ContinuousRecorder
-
 
 # CONSTANTS
-SAMPLE_RATE = 48000          # Hz
-WINDOW_DURATION = 1.0        # seconds (sliding window length)
-CHUNK_DURATION = 0.1         # seconds (shift amount per iteration)
-CHANNELS = 1               # Mono recording
-SPEED_OF_SOUND = 343         # m/s
+SAMPLE_RATE = 48000       # Hz
+DURATION = 1.0            # seconds per iteration (for 10Hz updates)
+CHANNELS = 1            # Mono recording
+SPEED_OF_SOUND = 343      # m/s
 
-# Global mic order and tower positions.
+# Global mic order and (later) tower positions.
 MIC_ORDER = [4, 2, 3]
-# Microphone positions (ALSA card numbers → Physical positions)
+# MIC_POSITIONS will be updated based on tower configuration (in meters)
+#MIC_POSITIONS = {}
+# **Microphone positions (ALSA card numbers → Physical positions)**
 MIC_POSITIONS = {
-    2: np.array([0, 0]),            # Mic 4
-    3: np.array([3.6576, 3.6576]),   # Mic 2
-    4: np.array([7.3152, 0])         # Mic 3
+    2: np.array([0,0]),  # **Mic 4**
+    3: np.array([3.6576,3.6576]),  # **Mic 2**
+    4: np.array([7.3152, 0])   # **Mic 3**
 }
 
 # CSV logging file
 CSV_FILE = "sound_source_log.csv"
 
-# TCP Ports:
+# TCP Ports: 
 #   39440 is used for tower configuration (bi-directional exchange with the tablet)
 #   39439 is used to send live (x,y) updates to the tablet.
 TOWER_CONFIG_PORT = 39440
@@ -89,6 +88,12 @@ def tower_configuration_server():
             except Exception as e:
                 print(f"[Tower Config] Error parsing line '{line}': {e}")
                 continue
+    # Update MIC_POSITIONS for each mic in MIC_ORDER
+    #for mic in MIC_ORDER:
+        #if mic in received:
+        #    MIC_POSITIONS[mic] = np.array(received[mic])
+        #else:
+        #    MIC_POSITIONS[mic] = np.array([0, 0])
     # Optionally, send an acknowledgement
     ack = "Tower configuration complete\n"
     conn.sendall(ack.encode())
@@ -99,57 +104,46 @@ def tower_configuration_server():
         print(f"   Mic {mic}: {MIC_POSITIONS[mic]}")
 
 
-def record_mic(mic_id, recordings, duration):
-    print(f"[Debug] record_mic: Starting recording on Mic {mic_id} for {duration:.2f} seconds (hw:{mic_id},0)")
-    try:
-        sd.stop()
-        num_samples = int(duration * SAMPLE_RATE)
-        print(f"[Debug] record_mic: Expected num_samples = {num_samples}")
-        audio_data = sd.rec(num_samples,
-                            samplerate=SAMPLE_RATE,
-                            channels=CHANNELS,
-                            device=f"hw:{mic_id},0",
-                            dtype=np.float32)
-        print("[Debug] record_mic: Audio recording initiated, waiting for completion.")
-        sd.wait()
-        print(f"[Debug] record_mic: Raw audio_data shape: {audio_data.shape}")
-        
-        # Replace NaN values with zero, then clip values to [-1.0, 1.0]
-        audio_data = np.nan_to_num(audio_data, nan=0.0)
-        print("[Debug] record_mic: After np.nan_to_num - min: {:.6f}, max: {:.6f}".format(np.min(audio_data), np.max(audio_data)))
-        
-        audio_data = np.clip(audio_data, -1.0, 1.0)
-        print("[Debug] record_mic: After clipping - min: {:.6f}, max: {:.6f}".format(np.min(audio_data), np.max(audio_data)))
-        
-        max_amp = np.max(np.abs(audio_data))
-        print(f"[Debug] record_mic: Computed max_amp: {max_amp:.6f}")
-        
-        if np.isnan(max_amp) or max_amp < 1e-3:
-            print(f"[Audio] Warning: Mic {mic_id} recording abnormal (max_amp = {max_amp:.3f}). Using zeros.")
-            recordings[mic_id] = np.zeros(num_samples)
-        else:
-            recordings[mic_id] = audio_data.flatten()
-        print(f"[Audio] Mic {mic_id} recorded. Final max amplitude: {np.max(np.abs(recordings[mic_id])):.6f}")
-    except Exception as e:
-        print(f"[Audio] Error recording Mic {mic_id}: {e}")
-        recordings[mic_id] = np.zeros(num_samples)
-
-
-
-
-def record_audio(duration):
-    """
-    Record 'duration' seconds from all microphones concurrently.
-    """
+def record_audio():
+    """Record DURATION seconds from all microphones concurrently."""
     recordings = {}
     threads = []
     for mic in MIC_ORDER:
-        thread = threading.Thread(target=record_mic, args=(mic, recordings, duration))
+        thread = threading.Thread(target=record_mic, args=(mic, recordings))
         thread.start()
         threads.append(thread)
     for thread in threads:
         thread.join()
+    # Return recordings in the order of MIC_ORDER
     return [recordings[mic] for mic in MIC_ORDER]
+
+
+
+
+def record_mic(mic_id, recordings):
+    print(f"[Audio] Starting recording on Mic {mic_id} (hw:{mic_id},0)")
+    try:
+        # Flush any pending audio and allow the device to settle.
+        sd.stop()
+        audio_data = sd.rec(int(DURATION * SAMPLE_RATE),
+                            samplerate=SAMPLE_RATE,
+                            channels=CHANNELS,
+                            device=f"hw:{mic_id},0",
+                            dtype=np.float32)
+        sd.wait()
+        max_amp = np.max(np.abs(audio_data))
+        # New cleaning: valid amplitudes should be between 0 and 1.
+        if max_amp < 1e-3 or max_amp > 1.0:
+            print(f"[Audio] Warning: Mic {mic_id} recording abnormal (max_amp = {max_amp:.3f}). Using zeros.")
+            recordings[mic_id] = np.zeros(int(DURATION * SAMPLE_RATE))
+        else:
+            recordings[mic_id] = audio_data.flatten()
+        print(f"[Audio] Mic {mic_id} recorded. Max amplitude: {np.max(np.abs(audio_data)):.3f}")
+    except Exception as e:
+        print(f"[Audio] Error recording Mic {mic_id}: {e}")
+        recordings[mic_id] = np.zeros(int(DURATION * SAMPLE_RATE))
+
+
 
 def determine_reference_mic_cc(recordings_list):
     """
@@ -247,40 +241,34 @@ def main():
     write_csv_header_if_needed()
     # Step 0: Wait for tower configuration from the tablet.
     tower_configuration_server()
-
-    print("[Main] Initializing continuous recording streams for a sliding window of 1 second...")
-    # Create a continuous recorder for each mic
-    recorders = {mic: ContinuousRecorder(mic,
-                                          samplerate=SAMPLE_RATE,
-                                          channels=CHANNELS,
-                                          window_duration=WINDOW_DURATION,
-                                          chunk_duration=CHUNK_DURATION)
-                 for mic in MIC_ORDER}
     
-    # Initialize each mic's buffer from its continuous stream.
-    mic_buffers = {mic: recorders[mic].buffer for mic in MIC_ORDER}
-    for mic in MIC_ORDER:
-        print(f"[Init] Mic {mic} initialized. Max amplitude: {np.max(np.abs(mic_buffers[mic])):.3f}")
-
-    print("[Main] Starting live trilateration with sliding window (updating every 0.1 seconds). Press Ctrl+C to stop.")
+    print("[Main] Starting live trilateration prediction at 10Hz. Press Ctrl+C to stop.")
     try:
+        for mic in MIC_ORDER:
+            try:
+                warmup_data = sd.rec(int(1 * SAMPLE_RATE), samplerate=SAMPLE_RATE, channels=CHANNELS,
+                                     device=f"hw:{mic},0", dtype=np.float32)
+                sd.wait()
+                print(f"[Init] Mic {mic} warmed up. Max amplitude: {np.max(np.abs(warmup_data)):.3f}")
+            except Exception as e:
+                print(f"[Init] Mic {mic} warm-up failed: {e}")
         while True:
             start_time = time.time()
-            # Update the one-second window from each continuous recorder.
-            for mic in MIC_ORDER:
-                mic_buffers[mic] = recorders[mic].update_buffer()
-            recordings_list = [mic_buffers[mic] for mic in MIC_ORDER]
+            print("[Init] Warming up microphones for 1 second each...")
 
-            # Skip processing if all recordings are essentially silent.
+            recordings_list = record_audio() 
+            # New cleaning check: if all recordings have max amplitude below 1e-3, skip processing.
             if all(np.max(np.abs(r)) < 1e-3 for r in recordings_list):
                 print("[Main] All microphone recordings are silent. Skipping this iteration.")
                 elapsed = time.time() - start_time
-                sleep_time = max(0, CHUNK_DURATION - elapsed)
+                sleep_time = max(0, 0.1 - elapsed)
                 time.sleep(sleep_time)
                 continue
 
-            # Determine reference mic, compute time lags and trilaterate.
+            
+
             reference_mic, reordered_mics = determine_reference_mic_cc(recordings_list)
+            # Reorder recordings based on new mic order.
             recordings_ordered = [recordings_list[MIC_ORDER.index(mic)] for mic in reordered_mics]
             time_lags = cross_correlate(recordings_ordered, reordered_mics)
             estimated_position, r1, r2 = localize_source(time_lags, reordered_mics)
@@ -289,13 +277,10 @@ def main():
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             log_measurement(timestamp, reference_mic, reordered_mics, estimated_position, r1, r2)
             elapsed = time.time() - start_time
-            sleep_time = max(0, CHUNK_DURATION - elapsed)
+            sleep_time = max(0, 0.1 - elapsed)
             time.sleep(sleep_time)
     except KeyboardInterrupt:
         print("[Main] Terminated by user.")
-    finally:
-        for recorder in recorders.values():
-            recorder.close()
 
 if __name__ == "__main__":
     main()

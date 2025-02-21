@@ -11,9 +11,9 @@ DURATION = 10  # seconds
 
 # Microphone mappings (ALSA card numbers → Physical locations)
 MIC_POSITIONS = {
-    2: np.array([1, 0]),  # Mic 1
-    4: np.array([0, 0]),  # Mic 2
-    3: np.array([0, 1])   # Mic 3
+    2: np.array([0, 0]),  
+    3: np.array([3.657, 3.657]), 
+    4: np.array([7.3152, 0]) 
 }
 
 # Order of microphones (Matches ALSA card numbers)
