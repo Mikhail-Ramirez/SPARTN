@@ -53,8 +53,8 @@ int main() {
     std::cout << "HackRF device successfully opened." << std::endl;
 
     // Set frequency ranges for sweeping
-    const std::vector<std::pair<uint32_t, uint32_t>> frequency_ranges = {
-        {900000000, 915000000},   // 900 MHz range
+    const std::vector<std::pair<uint64_t, uint64_t>> frequency_ranges = {
+        { 900000000,  915000000},   // 900 MHz range
         {2400000000, 2500000000}, // 2.4 GHz range
         {4800000000, 4900000000}  // 4.8 GHz range
     };
@@ -63,11 +63,12 @@ int main() {
     std::cout << "Starting RF sweep..." << std::endl;
 
     for (const auto& range : frequency_ranges) {
-        uint32_t start_freq = range.first;
-        uint32_t end_freq = range.second;
+        uint64_t start_freq = range.first;
+        uint64_t end_freq = range.second;
         uint32_t step_size = 1000000; // 1 MHz step size
+        std::cout << start_freq << "\n";
 
-        for (uint32_t freq = start_freq; freq <= end_freq; freq += step_size) {
+        for (uint64_t freq = start_freq; freq <= end_freq; freq += step_size) {
             int gain = 40; // Example gain value
             status = hackrf_set_freq(device, freq);
             check_hackrf_status(status, "Failed to set frequency");
@@ -76,7 +77,12 @@ int main() {
             check_hackrf_status(status, "Failed to set LNA gain");
 
             std::ostringstream data_line;
-            data_line << "Frequency: " << freq << " Hz, Gain: " << gain;
+            if (freq > 1000000000) { //If the frequency is greater than 1 GHz, use 1 GHz formatting.
+                data_line << "Frequency: " << freq / 1000000000.0 << " GHz, Gain: " << gain;
+            }
+            else { //Otherwise, use MHz formatting
+                data_line << "Frequency: " << freq / 1000000 << " MHz, Gain: " << gain;
+            }
 
             sweep_data.push_back(data_line.str());
             std::cout << data_line.str() << std::endl;
