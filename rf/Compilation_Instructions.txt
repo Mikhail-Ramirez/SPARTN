@@ -1,0 +1,8 @@
+I finally got it compiling on Ubuntu!  Here's what I did:
+
+sudo apt-get install hackrf
+hackrf_info #This just makes sure it installed correctly.
+g++ source_code.cpp -lhackrf -o object_file
+
+The -lhackrf command seems to be required for compiling correctly.  Otherwise, it would complain something like:
+hackrf_info.cpp:(.text+0x67): undefined reference to `hackrf_error_name'

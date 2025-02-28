@@ -1,0 +1,3 @@
+C:/Users/dawso/Desktop/DroneDetection/SPARTN_Github/SPARTN/audio/MATLAB_AI/matModel/MatLab_AI/out/build/x64-debug/CMakeFiles/MatLab_AI.dir
+C:/Users/dawso/Desktop/DroneDetection/SPARTN_Github/SPARTN/audio/MATLAB_AI/matModel/MatLab_AI/out/build/x64-debug/CMakeFiles/edit_cache.dir
+C:/Users/dawso/Desktop/DroneDetection/SPARTN_Github/SPARTN/audio/MATLAB_AI/matModel/MatLab_AI/out/build/x64-debug/CMakeFiles/rebuild_cache.dir
