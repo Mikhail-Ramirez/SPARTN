@@ -1,4 +1,17 @@
 # Drone Detection Network (SPARTN)
+## Setup and Installation
+# Setup and Installation
+
+Follow these steps to set up the project locally.
+
+### 1. Clone the Repository
+
+Clone the project repository from GitHub (replace `<repository_url>` with the actual URL):
+
+```bash
+git clone git clone https://github.com/Mikhail-Ramirez/SPARTN.git
+cd SPARTN
+```
 
 ## Project Summary
 The **Drone Detection Network (SPARTN - Sensor Platform for Acoustic and Radio Tracking Network)** aims to address the growing challenges posed by the rapid expansion of drone technology. By utilizing a low-cost, lightweight distributed sensor network, the system will detect and classify drones using a combination of radio frequency (RF) and acoustic signals. The network will provide real-time 3D positioning and classification (friendly or hostile) of drones via an Android tablet application, enhancing civilian safety and operational efficiency in restricted airspaces.
