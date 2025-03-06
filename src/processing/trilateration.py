@@ -3,7 +3,7 @@
 def determine_reference_mic(recordings_list):
     print("[Dummy] determine_reference_mic called.")
     # Return dummy reference mic and reordered mic list.
-    return 1, [1, 2, 3]
+    return 2, [2, 3, 4]
 
 def cross_correlate(recordings_ordered, reordered_mics):
     print("[Dummy] cross_correlate called.")
