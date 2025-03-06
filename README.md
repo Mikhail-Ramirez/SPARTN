@@ -4,7 +4,7 @@
 Follow these steps to set up the project locally.
 
 ### 1. Clone the Repository
-Clone the project repository from GitHub (replace `<repository_url>` with the actual URL):
+Clone the project repository from GitHub:
 ```bash
 git clone https://github.com/Mikhail-Ramirez/SPARTN.git
 cd SPARTN
