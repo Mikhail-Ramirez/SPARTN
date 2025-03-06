@@ -16,3 +16,4 @@ local.properties
 *.opendb
 *.csv
 env/*
+__pycache__/*
