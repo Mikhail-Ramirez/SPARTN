@@ -1,4 +1,7 @@
 # sensors/audio_recorder.py
+from config.settings import SAMPLE_RATE, WINDOW_DURATION, CHUNK_DURATION, MIC_ORDER
+import numpy as np
+import sounddevice as sd
 
 class ContinuousRecorder:
     def __init__(self, mic_id, samplerate=SAMPLE_RATE, channels=1,

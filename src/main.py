@@ -6,16 +6,19 @@ import logging
 # Import configuration parameters
 from config.settings import SAMPLE_RATE, WINDOW_DURATION, CHUNK_DURATION, MIC_ORDER
 
-# Import submodules for functionality
-from sensors.audio_recorder import ContinuousRecorder
-from processing.trilateration import determine_reference_mic, cross_correlate, localize_source
-from communications.tower_config import tower_configuration_server
-from communications.tablet_comm import send_location
-from utils.logger import write_csv_header_if_needed, log_measurement
+# Import submodules for functionality using relative imports
+from .sensors.audio_recorder import ContinuousRecorder
+from .processing.trilateration import determine_reference_mic, cross_correlate, localize_source
+from .communications.tower_config import tower_configuration_server
+from .communications.tablet_comm import send_location
+from .utils.logger import write_csv_header_if_needed, log_measurement
+
 # Placeholders for future integration:
-from processing.ai_classification import classify_audio_sample  # For AI audio analysis
-from communications.encryption import encrypt_message, decrypt_message  # For secure messaging
-from sensors.rf_receiver import start_rf_listener  # For handling RF data reception
+#from .processing.ai_classification import classify_audio_sample  # For AI audio analysis
+#from .communications.encryption import encrypt_message, decrypt_message  # For secure messaging
+#from .sensors.rf_receiver import start_rf_listener  # For handling RF data reception
+
+
 
 def main():
     # Set up logging for debugging and info messages
@@ -65,9 +68,9 @@ def main():
             
             if estimated_position[0] is not None:
                 # Encrypt the message if needed before sending
-                location_message = f"{estimated_position[0]:.2f},{estimated_position[1]:.2f}\n"
-                encrypted_message = encrypt_message(location_message)
-                send_location(encrypted_message)
+                message = f"{estimated_position[0]:.2f},{estimated_position[1]:.2f}\n"
+                # message = encrypt_message(location_message)
+                send_location(message)
             
             # Log the measurement to file with a timestamp
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())

@@ -1,4 +1,5 @@
 # config/settings.py
+import numpy as np
 
 SAMPLE_RATE = 48000
 WINDOW_DURATION = 1.0
