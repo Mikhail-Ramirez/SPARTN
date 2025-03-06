@@ -29,7 +29,7 @@ Install the required packages using pip:
 ```bash
 pip install -r requirements.txt
 ```
-### 4.5. Additional steps for a IP
+### 4.5. Additional steps for a rPI
 Install sound device for using the PortAudio Lib
 ```bash
 sudo apt-get update
