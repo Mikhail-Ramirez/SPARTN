@@ -4,7 +4,7 @@
 Follow these steps to set up the project locally.
 
 ### 1. Clone the Repository
-Clone the project repository from GitHub (replace `<repository_url>` with the actual URL):
+Clone the project repository from GitHub:
 ```bash
 git clone https://github.com/Mikhail-Ramirez/SPARTN.git
 cd SPARTN
@@ -29,7 +29,7 @@ Install the required packages using pip:
 ```bash
 pip install -r requirements.txt
 ```
-### 4.5. Additional steps for a IP
+### 4.5. Additional steps for a rPI
 Install sound device for using the PortAudio Lib
 ```bash
 sudo apt-get update
