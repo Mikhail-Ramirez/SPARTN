@@ -27,7 +27,7 @@ pip install -r requirements.txt
 ### 5. Run the App on the Pi
 Start the Application
 ```bash
-python integration/moment_of_truth.py
+python -m src.main
 ```
 
 ## Project Summary
