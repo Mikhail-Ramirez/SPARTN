@@ -19,6 +19,11 @@ Activate the virtual environment:
 ```bash
 source env/bin/activate
 ```
+### 3.5. Upgrade PIP
+Make sure you have the most recent pip installed:
+```bash
+pip install --upgrade pip
+```
 ### 4. Install Dependencies
 Install the required packages using pip:
 ```bash
