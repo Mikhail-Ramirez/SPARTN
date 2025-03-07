@@ -18,3 +18,8 @@ local.properties
 env/*
 */__pycache__/*
 .idea/*
+
+# Ignore Python cache directories and compiled files
+__pycache__/
+*.py[cod]
+
