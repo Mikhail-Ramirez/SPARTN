@@ -1,5 +1,20 @@
 # communications/tablet_comm.py
+from config.settings import *
 
-def send_location(message):
-    print(f"[Dummy] send_location called with message: {message}")
-
+def send_location(x, y):
+    """
+    Opens a TCP connection to the tablet (TABLET_IP) on port 39439 to send the estimated (x,y).
+    """
+    global TABLET_IP
+    if TABLET_IP is None:
+        print("[Send] Tablet IP not configured; cannot send location.")
+        return
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((TABLET_IP, 39439))
+        message = f"{x:.2f},{y:.2f}\n"
+        sock.sendall(message.encode())
+        sock.close()
+        print(f"[Send] Sent location: {message.strip()}")
+    except Exception as e:
+        print(f"[Send] Error sending location: {e}")

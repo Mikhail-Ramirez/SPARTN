@@ -68,9 +68,8 @@ def main():
             
             if estimated_position[0] is not None:
                 # Encrypt the message if needed before sending
-                message = f"{estimated_position[0]:.2f},{estimated_position[1]:.2f}\n"
                 # message = encrypt_message(location_message)
-                send_location(message)
+                send_location(estimated_position[0],estimated_position[1])
             
             # Log the measurement to file with a timestamp
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
