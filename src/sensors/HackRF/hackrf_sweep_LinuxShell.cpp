@@ -17,6 +17,7 @@ using namespace std;
 
 std::string exec(const char* cmd);
 vector<vector<string>> breakUp(string);
+vector<tuple<uint64_t, int>> process(vector<vector<string>>);
 
 int main() {
 	cout << "Starting..." << endl;
@@ -32,25 +33,23 @@ int main() {
     vector<vector<string>> twoGHz_sub = breakUp(twoGHz);
     vector<vector<string>> fiveGHz_sub = breakUp(fiveGHz);
 
-    for (vector<string> row : nineMHz_sub) {
-        for (string entry : row) {
-            cout << entry << endl;
-        }
-        cout << endl;
+    vector<tuple<uint64_t, int>> nineMHz_processed = process(nineMHz_sub);
+    vector<tuple<uint64_t, int>> twoGHz_processed = process(twoGHz_sub);
+    vector<tuple<uint64_t, int>> fiveGHz_processed = process(fiveGHz_sub);
+
+    //cout << "Processed!" << endl;
+
+
+    for (tuple<uint64_t, int> row : nineMHz_processed) {
+        cout << get<0>(row) << ", " << get<1>(row) << endl;
     }
 
-    for (vector<string> row : twoGHz_sub) {
-        for (string entry : row) {
-            cout << entry << endl;
-        }
-        cout << endl;
+    for (tuple<uint64_t, int> row : twoGHz_processed) {
+        cout << get<0>(row) << ", " << get<1>(row) << endl;
     }
 
-    for (vector<string> row : fiveGHz_sub) {
-        for (string entry : row) {
-            cout << entry << endl;
-        }
-        cout << endl;
+    for (tuple<uint64_t, int> row : fiveGHz_processed) {
+        cout << get<0>(row) << ", " << get<1>(row) << endl;
     }
 
 	//cout << "Test = " << subs[0] << endl;
@@ -91,6 +90,30 @@ vector<vector<string>> breakUp(string originalText) {
         else {
             substring = substring + originalText[i];
         }
+    }
+    return container;
+}
+
+vector<tuple<uint64_t, int>> process(vector<vector<string>> original) {
+    //Each row has 11 columns
+    //Date, time, Start Frequency, End Frequency, Bin width, number of samples, bin1, bin2, bin3, bin4, bin5
+    //Number of bins = End - Start / Bin width
+
+    vector<tuple<uint64_t, int>> container;
+    tuple<uint64_t, int> entry;
+
+    for (vector<string> row : original) {
+        entry = make_tuple(stoull(row[2]), stoi(row[6]));
+        container.push_back(entry);
+
+        entry = make_tuple(stoull(row[2]) + stoull(row[4]), stoi(row[7]));
+        container.push_back(entry);
+
+        entry = make_tuple(stoull(row[2]) + stoull(row[4]), stoi(row[8]));
+        container.push_back(entry);
+
+        entry = make_tuple(stoull(row[2]) + 3 * stoull(row[4]), stoi(row[9]));
+        container.push_back(entry);
     }
     return container;
 }
