@@ -1,4 +1,5 @@
 # processing/trilateration.py
+import logging
 from scipy.signal import correlate
 from config.settings import *
 
@@ -6,7 +7,7 @@ def determine_reference_mic(recordings_list):
     """
     Determines the reference mic using whole-sample cross-correlation.
     """
-    print("[Trilateration] Determining reference mic based on cross-correlation...")
+    logging.info("[Trilateration] Determining reference mic based on cross-correlation...")
     scores = {}
     for i, mic in enumerate(MIC_ORDER):
         score = 0.0
@@ -20,11 +21,11 @@ def determine_reference_mic(recordings_list):
             peak_index = np.argmax(np.abs(correlation))
             lag = lags[peak_index]
             score += lag
-            print(f"[Trilateration] Cross-correlation: Mic {mic} vs Mic {other_mic}: lag = {lag:.6f} s")
+            logging.info(f"[Trilateration] Cross-correlation: Mic {mic} vs Mic {other_mic}: lag = {lag:.6f} s")
         scores[mic] = score
-        print(f"[Trilateration] Total score for Mic {mic}: {score:.6f} s")
+        logging.info(f"[Trilateration] Total score for Mic {mic}: {score:.6f} s")
     reference_mic = max(scores, key=scores.get)
-    print(f"[Trilateration] Reference mic chosen: Mic {reference_mic}")
+    logging.info(f"[Trilateration] Reference mic chosen: Mic {reference_mic}")
     reordered_mics = [reference_mic] + [m for m in MIC_ORDER if m != reference_mic]
     return reference_mic, reordered_mics
 
@@ -32,7 +33,7 @@ def cross_correlate(recordings_ordered, reordered_mics):
     """
     Computes time delays (lags) between the reference mic and the other mics.
     """
-    print("[Trilateration] Computing time lags relative to the reference mic...")
+    logging.info("[Trilateration] Computing time lags relative to the reference mic...")
     ref_signal = recordings_ordered[0]
     time_lags = {}
     for i in range(1, len(recordings_ordered)):
@@ -43,22 +44,22 @@ def cross_correlate(recordings_ordered, reordered_mics):
         peak_index = np.argmax(np.abs(correlation))
         time_lag = lags[peak_index]
         time_lags[mic] = time_lag
-        print(f"[Trilateration] Time lag: Ref Mic {reordered_mics[0]} vs Mic {mic}: {time_lag:.6f} s")
+        logging.info(f"[Trilateration] Time lag: Ref Mic {reordered_mics[0]} vs Mic {mic}: {time_lag:.6f} s")
     return time_lags
 
 def localize_source(time_lags, reordered_mics):
     """
     Converts time lags to distances and applies trilateration.
     """
-    print("[Trilateration] Performing trilateration to locate sound source...")
+    logging.info("[Trilateration] Performing trilateration to locate sound source...")
     if len(reordered_mics) < 3:
-        print("[Trilateration] Not enough microphones for trilateration.")
+        logging.info("[Trilateration] Not enough microphones for trilateration.")
         return np.array([None, None]), 0, 0
     # Convert time lags to distances
     r1 = time_lags.get(reordered_mics[1], 0) * SPEED_OF_SOUND
     r2 = time_lags.get(reordered_mics[2], 0) * SPEED_OF_SOUND
     r3 = 0  # Reference mic
-    print(f"[Trilateration] Distances: r1={r1:.3f} m, r2={r2:.3f} m")
+    logging.info(f"[Trilateration] Distances: r1={r1:.3f} m, r2={r2:.3f} m")
     tower1 = MIC_POSITIONS[reordered_mics[0]]
     tower2 = MIC_POSITIONS[reordered_mics[1]]
     tower3 = MIC_POSITIONS[reordered_mics[2]]
@@ -70,8 +71,8 @@ def localize_source(time_lags, reordered_mics):
     b_vector = np.array([C, D])
     try:
         estimated_position = np.linalg.solve(A_matrix, b_vector)
-        print(f"[Trilateration] Estimated position: x = {estimated_position[0]:.3f}, y = {estimated_position[1]:.3f}")
+        logging.info(f"[Trilateration] Estimated position: x = {estimated_position[0]:.3f}, y = {estimated_position[1]:.3f}")
     except np.linalg.LinAlgError:
-        print("[Trilateration] Error: Singular matrix during trilateration.")
+        logging.info("[Trilateration] Error: Singular matrix during trilateration.")
         estimated_position = np.array([None, None])
     return estimated_position, r1, r2

@@ -1,5 +1,6 @@
 # communications/tablet_comm.py
 from config.settings import *
+import logging
 
 def send_location(x, y):
     """
@@ -7,7 +8,7 @@ def send_location(x, y):
     """
     global TABLET_IP
     if TABLET_IP is None:
-        print("[Send] Tablet IP not configured; cannot send location.")
+        logging.info("[Send] Tablet IP not configured; cannot send location.")
         return
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -15,6 +16,6 @@ def send_location(x, y):
         message = f"{x:.2f},{y:.2f}\n"
         sock.sendall(message.encode())
         sock.close()
-        print(f"[Send] Sent location: {message.strip()}")
+        logging.info(f"[Send] Sent location: {message.strip()}")
     except Exception as e:
-        print(f"[Send] Error sending location: {e}")
+        logging.info(f"[Send] Error sending location: {e}")

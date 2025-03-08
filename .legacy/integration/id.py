@@ -6,17 +6,17 @@ def list_alsa_mics():
     alsa_api_indices = [i for i, api in enumerate(hostapis) if "ALSA" in api['name']]
     
     if not alsa_api_indices:
-        print("No ALSA host API found on your system!")
+        logging.info("No ALSA host API found on your system!")
         return
 
-    # Query all devices and print only input devices that belong to ALSA host API(s)
+    # Query all devices and logging.info only input devices that belong to ALSA host API(s)
     devices = sd.query_devices()
-    print("🎤 Attached Microphones (ALSA IDs):")
+    logging.info("🎤 Attached Microphones (ALSA IDs):")
     for idx, device in enumerate(devices):
         if device['max_input_channels'] > 0 and device['hostapi'] in alsa_api_indices:
-            print(f"  ID {idx}: {device['name']}")
+            logging.info(f"  ID {idx}: {device['name']}")
 
 if __name__ == "__main__":
     list_alsa_mics()
-    print("remember that killing alsa resets the mic ids")
+    logging.info("remember that killing alsa resets the mic ids")
 

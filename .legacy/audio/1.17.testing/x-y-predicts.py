@@ -41,7 +41,7 @@ def log_measurement(timestamp, reference_mic, mic_order, estimated_position, r1,
 
 def record_mic(mic_id):
     global recordings
-    print(f"Starting recording on Mic {mic_id} (hw:{mic_id},0)")
+    logging.info(f"Starting recording on Mic {mic_id} (hw:{mic_id},0)")
     try:
         audio_data = sd.rec(int(DURATION * SAMPLE_RATE),
                             samplerate=SAMPLE_RATE,
@@ -50,15 +50,15 @@ def record_mic(mic_id):
                             dtype=np.float32)
         sd.wait()
         recordings[mic_id] = audio_data.flatten()
-        print(f"Mic {mic_id} recorded. Max Amplitude: {np.max(np.abs(audio_data)):.3f}")
+        logging.info(f"Mic {mic_id} recorded. Max Amplitude: {np.max(np.abs(audio_data)):.3f}")
     except Exception as e:
-        print(f"Error recording Mic {mic_id}: {e}")
+        logging.info(f"Error recording Mic {mic_id}: {e}")
         recordings[mic_id] = np.zeros(int(DURATION * SAMPLE_RATE))
 
 def record_audio():
     """Starts recording for all microphones simultaneously."""
     global recordings
-    print(f"\nRecording from all microphones simultaneously for {DURATION} second(s)...")
+    logging.info(f"\nRecording from all microphones simultaneously for {DURATION} second(s)...")
     threads = []
     recordings.clear()  # clear previous recordings
     for mic in MIC_ORDER:
@@ -77,7 +77,7 @@ def determine_reference_mic_cc(recordings_list):
     other mics relative to it) are summed. The mic with the highest total lag is chosen
     as the reference (since a positive lag indicates that the candidate received the sound earlier).
     """
-    print("Determining Reference Mic based on cross-correlation over the entire clip...")
+    logging.info("Determining Reference Mic based on cross-correlation over the entire clip...")
     scores = {}
     # recordings_list is assumed to be in the same order as MIC_ORDER
     for i, mic in enumerate(MIC_ORDER):
@@ -92,11 +92,11 @@ def determine_reference_mic_cc(recordings_list):
             peak_index = np.argmax(np.abs(correlation))
             lag = lags[peak_index]
             score += lag
-            print(f"Cross-correlation: Mic {mic} vs Mic {other_mic}: lag = {lag:.6f} s")
+            logging.info(f"Cross-correlation: Mic {mic} vs Mic {other_mic}: lag = {lag:.6f} s")
         scores[mic] = score
-        print(f"Total score for Mic {mic}: {score:.6f} s")
+        logging.info(f"Total score for Mic {mic}: {score:.6f} s")
     reference_mic = max(scores, key=scores.get)
-    print(f"Reference mic chosen (based on cross-correlation): Mic {reference_mic}")
+    logging.info(f"Reference mic chosen (based on cross-correlation): Mic {reference_mic}")
     # Reorder the mic list so that the reference mic is first
     reordered_mics = [reference_mic] + [mic for mic in MIC_ORDER if mic != reference_mic]
     return reference_mic, reordered_mics
@@ -106,7 +106,7 @@ def cross_correlate(recordings_ordered, reordered_mics):
     Computes time delays between the chosen reference mic (first in recordings_ordered)
     and the other microphones using cross-correlation.
     """
-    print("Performing cross-correlation to compute time lags relative to reference...")
+    logging.info("Performing cross-correlation to compute time lags relative to reference...")
     ref_signal = recordings_ordered[0]
     time_lags = {}
     for i in range(1, len(recordings_ordered)):
@@ -117,7 +117,7 @@ def cross_correlate(recordings_ordered, reordered_mics):
         peak_index = np.argmax(np.abs(correlation))
         time_lag = lags[peak_index]
         time_lags[mic] = time_lag
-        print(f"Time lag between Ref Mic (Mic {reordered_mics[0]}) and Mic {mic}: {time_lag:.6f} s")
+        logging.info(f"Time lag between Ref Mic (Mic {reordered_mics[0]}) and Mic {mic}: {time_lag:.6f} s")
     return time_lags
 
 def localize_source(time_lags, reordered_mics):
@@ -125,15 +125,15 @@ def localize_source(time_lags, reordered_mics):
     Uses the computed time lags (converted to distances) to perform trilateration
     and estimate the sound source's (x, y) location.
     """
-    print("Performing trilateration to locate sound source...")
+    logging.info("Performing trilateration to locate sound source...")
     if len(reordered_mics) < 3:
-        print("Not enough microphones for trilateration.")
+        logging.info("Not enough microphones for trilateration.")
         return np.array([None, None]), 0, 0
     # Convert time lags to distances (r = lag * SPEED_OF_SOUND)
     r1 = time_lags.get(reordered_mics[1], 0) * SPEED_OF_SOUND
     r2 = time_lags.get(reordered_mics[2], 0) * SPEED_OF_SOUND
     r3 = 0  # Reference mic has zero lag by definition
-    print(f"Distances (meters): r1={r1:.3f}, r2={r2:.3f}")
+    logging.info(f"Distances (meters): r1={r1:.3f}, r2={r2:.3f}")
     # Get tower positions based on reordered mic list
     tower1 = MIC_POSITIONS[reordered_mics[0]]
     tower2 = MIC_POSITIONS[reordered_mics[1]]
@@ -147,15 +147,15 @@ def localize_source(time_lags, reordered_mics):
     b_vector = np.array([C, D])
     try:
         estimated_position = np.linalg.solve(A_matrix, b_vector)
-        print(f"Estimated position: x = {estimated_position[0]:.3f}, y = {estimated_position[1]:.3f}")
+        logging.info(f"Estimated position: x = {estimated_position[0]:.3f}, y = {estimated_position[1]:.3f}")
     except np.linalg.LinAlgError:
-        print("Trilateration failed due to singular matrix.")
+        logging.info("Trilateration failed due to singular matrix.")
         estimated_position = np.array([None, None])
     return estimated_position, r1, r2
 
 def main():
     write_csv_header_if_needed()
-    print("Starting live trilateration prediction. Press Ctrl+C to stop.")
+    logging.info("Starting live trilateration prediction. Press Ctrl+C to stop.")
     try:
         while True:
             # Record 1 second of audio from all microphones
@@ -171,9 +171,9 @@ def main():
             # Log the measurement with a timestamp
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             log_measurement(timestamp, reference_mic, reordered_mics, estimated_position, r1, r2)
-            print("Measurement logged.\n----")
+            logging.info("Measurement logged.\n----")
     except KeyboardInterrupt:
-        print("Terminated by user.")
+        logging.info("Terminated by user.")
 
 if __name__ == "__main__":
     main()

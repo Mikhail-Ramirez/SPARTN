@@ -18,8 +18,8 @@ def get_alsa_cards():
 
 def detect_new_mics():
     """Continuously check for newly plugged-in microphones."""
-    print("Please start with NO microphones plugged in, then add them one by one.")
-    print("Waiting for microphones...")
+    logging.info("Please start with NO microphones plugged in, then add them one by one.")
+    logging.info("Waiting for microphones...")
 
     previous_mics = set()
     
@@ -30,7 +30,7 @@ def detect_new_mics():
         new_mics = current_mics - previous_mics
         if new_mics:
             for mic in new_mics:
-                print(f"New Microphone Detected! Card: {mic[0]}, Name: {mic[1]}")
+                logging.info(f"New Microphone Detected! Card: {mic[0]}, Name: {mic[1]}")
 
         previous_mics = current_mics
 
@@ -39,5 +39,5 @@ def detect_new_mics():
 try:
     detect_new_mics()
 except KeyboardInterrupt:
-    print("\nScript stopped.")
+    logging.info("\nScript stopped.")
 

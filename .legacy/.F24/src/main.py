@@ -159,9 +159,9 @@ class DroneDetectionApp(App):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((HOST, PORT))
             s.listen()
-            print("Waiting for connection on 127.0.0.1:65432...")
+            logging.info("Waiting for connection on 127.0.0.1:65432...")
             conn, addr = s.accept()
-            print(f"Connected by {addr}")
+            logging.info(f"Connected by {addr}")
             with conn:
                 while True:
                     data = conn.recv(1024)
@@ -171,9 +171,9 @@ class DroneDetectionApp(App):
                         x, y = map(float, data.decode().strip().split(","))
                         # Schedule the update on the main thread
                         Clock.schedule_once(lambda dt: self.graph_widget.update_position(x, y))
-                        print(f"Received: x={x}, y={y}")
+                        logging.info(f"Received: x={x}, y={y}")
                     except ValueError:
-                        print("Invalid data received")
+                        logging.info("Invalid data received")
 
 if __name__ == '__main__':
     DroneDetectionApp().run()

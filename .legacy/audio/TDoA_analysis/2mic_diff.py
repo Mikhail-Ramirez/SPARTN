@@ -39,15 +39,15 @@ recordings = {}
 def record_mic(mic_id):
     """Records audio from a single microphone."""
     global recordings
-    print(f"🎤 Starting 30-second recording on Mic {mic_id} (device: hw:{mic_id},0)...")
+    logging.info(f"🎤 Starting 30-second recording on Mic {mic_id} (device: hw:{mic_id},0)...")
     try:
         audio_data = sd.rec(int(DURATION * SAMPLE_RATE), samplerate=SAMPLE_RATE,
                             channels=CHANNELS, device=f"hw:{mic_id},0", dtype=np.float32)
         sd.wait()  # Wait for recording to finish
         recordings[mic_id] = audio_data.flatten()
-        print(f"✅ Mic {mic_id} recorded (Max amplitude: {np.max(np.abs(audio_data)):.3f})")
+        logging.info(f"✅ Mic {mic_id} recorded (Max amplitude: {np.max(np.abs(audio_data)):.3f})")
     except Exception as e:
-        print(f"❌ Error recording Mic {mic_id}: {e}")
+        logging.info(f"❌ Error recording Mic {mic_id}: {e}")
         recordings[mic_id] = np.zeros(int(DURATION * SAMPLE_RATE))
 
 def record_all_mics():
@@ -83,7 +83,7 @@ def save_samples_to_csv(recordings_list, filename="recorded_samples.csv"):
             for rec in recordings_list:
                 row.append(rec[i])
             writer.writerow(row)
-    print(f"✅ Recorded samples saved to {filename}")
+    logging.info(f"✅ Recorded samples saved to {filename}")
 
 def save_delays_to_csv(times, delays, filename="tdoa_delays.csv"):
     """
@@ -96,7 +96,7 @@ def save_delays_to_csv(times, delays, filename="tdoa_delays.csv"):
         writer.writerow(header)
         for t, d in zip(times, delays):
             writer.writerow([t, d])
-    print(f"✅ Delay data saved to {filename}")
+    logging.info(f"✅ Delay data saved to {filename}")
 
 # ========================
 # TDOA Analysis Functions
@@ -120,7 +120,7 @@ def analyze_tdoa(recordings_list, window_duration=0.1):
     ref_signal = recordings_list[0]   # Mic4 as reference
     mic_signal = recordings_list[1]   # Mic3
 
-    print(f"🔍 Analyzing TDOA in {num_windows} windows (each {window_duration} s)...")
+    logging.info(f"🔍 Analyzing TDOA in {num_windows} windows (each {window_duration} s)...")
 
     for i in range(num_windows):
         start = i * window_size
@@ -153,7 +153,7 @@ def plot_delays(times, delays, filename="tdoa_delays.png"):
     plt.legend()
     plt.grid(True)
     plt.savefig(filename)
-    print(f"✅ Delay plot saved as {filename}")
+    logging.info(f"✅ Delay plot saved as {filename}")
     plt.show()
 
 def compute_average_and_percent_error(delays):
@@ -170,7 +170,7 @@ def compute_average_and_percent_error(delays):
 # Main Execution
 # ========================
 def main():
-    print("🎧 Starting a 30-second recording session for TDOA analysis with 2 mics...")
+    logging.info("🎧 Starting a 30-second recording session for TDOA analysis with 2 mics...")
     recordings_list = record_all_mics()
 
     # Save all the raw samples to CSV (brace yourself—the file may be huge!)
@@ -186,11 +186,11 @@ def main():
     # Plot the delays over time
     plot_delays(times, delays, filename="tdoa_delays.png")
 
-    # Compute and print average delay and percent error for Mic3 relative to Mic4
+    # Compute and logging.info average delay and percent error for Mic3 relative to Mic4
     avg_delay, percent_error = compute_average_and_percent_error(delays)
-    print("\n===== TDOA Analysis Results =====")
-    print(f"Mic3 Delay (relative to Mic4): Average = {avg_delay:.6f} s, Percent Error = {percent_error:.2f}%")
-    print("=================================")
+    logging.info("\n===== TDOA Analysis Results =====")
+    logging.info(f"Mic3 Delay (relative to Mic4): Average = {avg_delay:.6f} s, Percent Error = {percent_error:.2f}%")
+    logging.info("=================================")
 
 if __name__ == "__main__":
     main()

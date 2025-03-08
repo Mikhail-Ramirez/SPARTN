@@ -1,14 +1,21 @@
 # utils/logger.py
 import logging
+import sys
 from config.settings import LOG_FILE
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    filename=LOG_FILE,  # All logs go to this file
-    filemode='a'  # Append to the file; use 'w' to overwrite on each run
-)
+# Create a root logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
+# File handler: writes logs to a file
+file_handler = logging.FileHandler(LOG_FILE, mode='a')
+file_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+logger.addHandler(file_handler)
+
+# Stream handler: prints logs to the terminal (stdout)
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+logger.addHandler(stream_handler)
 
 
 def log_measurement(timestamp, reference_mic, mic_order, estimated_position, r1, r2):

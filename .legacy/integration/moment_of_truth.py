@@ -60,14 +60,14 @@ def tower_configuration_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(('', TOWER_CONFIG_PORT))
     server.listen(1)
-    print(f"[Tower Config] Waiting for tower configuration connection on port {TOWER_CONFIG_PORT}...")
+    logging.info(f"[Tower Config] Waiting for tower configuration connection on port {TOWER_CONFIG_PORT}...")
     conn, addr = server.accept()
     TABLET_IP = addr[0]
-    print(f"[Tower Config] Connected by {TABLET_IP}")
+    logging.info(f"[Tower Config] Connected by {TABLET_IP}")
     # Send the mic indexes (e.g., "4,2,3\n")
     mic_indexes_str = ",".join(str(m) for m in MIC_ORDER) + "\n"
     conn.sendall(mic_indexes_str.encode())
-    print(f"[Tower Config] Sent mic indexes: {mic_indexes_str.strip()}")
+    logging.info(f"[Tower Config] Sent mic indexes: {mic_indexes_str.strip()}")
 
     # Wait to receive tower coordinates until all mics are configured.
     received = {}
@@ -85,53 +85,53 @@ def tower_configuration_server():
                 x = float(parts[1])
                 y = float(parts[2])
                 received[mic_index] = (x, y)
-                print(f"[Tower Config] Received tower coordinate for mic {mic_index}: ({x}, {y})")
+                logging.info(f"[Tower Config] Received tower coordinate for mic {mic_index}: ({x}, {y})")
             except Exception as e:
-                print(f"[Tower Config] Error parsing line '{line}': {e}")
+                logging.info(f"[Tower Config] Error parsing line '{line}': {e}")
                 continue
     # Optionally, send an acknowledgement
     ack = "Tower configuration complete\n"
     conn.sendall(ack.encode())
     conn.close()
     server.close()
-    print("[Tower Config] Tower configuration complete. MIC_POSITIONS updated:")
+    logging.info("[Tower Config] Tower configuration complete. MIC_POSITIONS updated:")
     for mic in MIC_ORDER:
-        print(f"   Mic {mic}: {MIC_POSITIONS[mic]}")
+        logging.info(f"   Mic {mic}: {MIC_POSITIONS[mic]}")
 
 
 def record_mic(mic_id, recordings, duration):
-    print(f"[Debug] record_mic: Starting recording on Mic {mic_id} for {duration:.2f} seconds (hw:{mic_id},0)")
+    logging.info(f"[Debug] record_mic: Starting recording on Mic {mic_id} for {duration:.2f} seconds (hw:{mic_id},0)")
     try:
         sd.stop()
         num_samples = int(duration * SAMPLE_RATE)
-        print(f"[Debug] record_mic: Expected num_samples = {num_samples}")
+        logging.info(f"[Debug] record_mic: Expected num_samples = {num_samples}")
         audio_data = sd.rec(num_samples,
                             samplerate=SAMPLE_RATE,
                             channels=CHANNELS,
                             device=f"hw:{mic_id},0",
                             dtype=np.float32)
-        print("[Debug] record_mic: Audio recording initiated, waiting for completion.")
+        logging.info("[Debug] record_mic: Audio recording initiated, waiting for completion.")
         sd.wait()
-        print(f"[Debug] record_mic: Raw audio_data shape: {audio_data.shape}")
+        logging.info(f"[Debug] record_mic: Raw audio_data shape: {audio_data.shape}")
         
         # Replace NaN values with zero, then clip values to [-1.0, 1.0]
         audio_data = np.nan_to_num(audio_data, nan=0.0)
-        print("[Debug] record_mic: After np.nan_to_num - min: {:.6f}, max: {:.6f}".format(np.min(audio_data), np.max(audio_data)))
+        logging.info("[Debug] record_mic: After np.nan_to_num - min: {:.6f}, max: {:.6f}".format(np.min(audio_data), np.max(audio_data)))
         
         audio_data = np.clip(audio_data, -1.0, 1.0)
-        print("[Debug] record_mic: After clipping - min: {:.6f}, max: {:.6f}".format(np.min(audio_data), np.max(audio_data)))
+        logging.info("[Debug] record_mic: After clipping - min: {:.6f}, max: {:.6f}".format(np.min(audio_data), np.max(audio_data)))
         
         max_amp = np.max(np.abs(audio_data))
-        print(f"[Debug] record_mic: Computed max_amp: {max_amp:.6f}")
+        logging.info(f"[Debug] record_mic: Computed max_amp: {max_amp:.6f}")
         
         if np.isnan(max_amp) or max_amp < 1e-3:
-            print(f"[Audio] Warning: Mic {mic_id} recording abnormal (max_amp = {max_amp:.3f}). Using zeros.")
+            logging.info(f"[Audio] Warning: Mic {mic_id} recording abnormal (max_amp = {max_amp:.3f}). Using zeros.")
             recordings[mic_id] = np.zeros(num_samples)
         else:
             recordings[mic_id] = audio_data.flatten()
-        print(f"[Audio] Mic {mic_id} recorded. Final max amplitude: {np.max(np.abs(recordings[mic_id])):.6f}")
+        logging.info(f"[Audio] Mic {mic_id} recorded. Final max amplitude: {np.max(np.abs(recordings[mic_id])):.6f}")
     except Exception as e:
-        print(f"[Audio] Error recording Mic {mic_id}: {e}")
+        logging.info(f"[Audio] Error recording Mic {mic_id}: {e}")
         recordings[mic_id] = np.zeros(num_samples)
 
 
@@ -155,7 +155,7 @@ def determine_reference_mic_cc(recordings_list):
     """
     Determines the reference mic using whole-sample cross-correlation.
     """
-    print("[Trilateration] Determining reference mic based on cross-correlation...")
+    logging.info("[Trilateration] Determining reference mic based on cross-correlation...")
     scores = {}
     for i, mic in enumerate(MIC_ORDER):
         score = 0.0
@@ -169,11 +169,11 @@ def determine_reference_mic_cc(recordings_list):
             peak_index = np.argmax(np.abs(correlation))
             lag = lags[peak_index]
             score += lag
-            print(f"[Trilateration] Cross-correlation: Mic {mic} vs Mic {other_mic}: lag = {lag:.6f} s")
+            logging.info(f"[Trilateration] Cross-correlation: Mic {mic} vs Mic {other_mic}: lag = {lag:.6f} s")
         scores[mic] = score
-        print(f"[Trilateration] Total score for Mic {mic}: {score:.6f} s")
+        logging.info(f"[Trilateration] Total score for Mic {mic}: {score:.6f} s")
     reference_mic = max(scores, key=scores.get)
-    print(f"[Trilateration] Reference mic chosen: Mic {reference_mic}")
+    logging.info(f"[Trilateration] Reference mic chosen: Mic {reference_mic}")
     reordered_mics = [reference_mic] + [m for m in MIC_ORDER if m != reference_mic]
     return reference_mic, reordered_mics
 
@@ -181,7 +181,7 @@ def cross_correlate(recordings_ordered, reordered_mics):
     """
     Computes time delays (lags) between the reference mic and the other mics.
     """
-    print("[Trilateration] Computing time lags relative to the reference mic...")
+    logging.info("[Trilateration] Computing time lags relative to the reference mic...")
     ref_signal = recordings_ordered[0]
     time_lags = {}
     for i in range(1, len(recordings_ordered)):
@@ -192,22 +192,22 @@ def cross_correlate(recordings_ordered, reordered_mics):
         peak_index = np.argmax(np.abs(correlation))
         time_lag = lags[peak_index]
         time_lags[mic] = time_lag
-        print(f"[Trilateration] Time lag: Ref Mic {reordered_mics[0]} vs Mic {mic}: {time_lag:.6f} s")
+        logging.info(f"[Trilateration] Time lag: Ref Mic {reordered_mics[0]} vs Mic {mic}: {time_lag:.6f} s")
     return time_lags
 
 def localize_source(time_lags, reordered_mics):
     """
     Converts time lags to distances and applies trilateration.
     """
-    print("[Trilateration] Performing trilateration to locate sound source...")
+    logging.info("[Trilateration] Performing trilateration to locate sound source...")
     if len(reordered_mics) < 3:
-        print("[Trilateration] Not enough microphones for trilateration.")
+        logging.info("[Trilateration] Not enough microphones for trilateration.")
         return np.array([None, None]), 0, 0
     # Convert time lags to distances
     r1 = time_lags.get(reordered_mics[1], 0) * SPEED_OF_SOUND
     r2 = time_lags.get(reordered_mics[2], 0) * SPEED_OF_SOUND
     r3 = 0  # Reference mic
-    print(f"[Trilateration] Distances: r1={r1:.3f} m, r2={r2:.3f} m")
+    logging.info(f"[Trilateration] Distances: r1={r1:.3f} m, r2={r2:.3f} m")
     tower1 = MIC_POSITIONS[reordered_mics[0]]
     tower2 = MIC_POSITIONS[reordered_mics[1]]
     tower3 = MIC_POSITIONS[reordered_mics[2]]
@@ -219,9 +219,9 @@ def localize_source(time_lags, reordered_mics):
     b_vector = np.array([C, D])
     try:
         estimated_position = np.linalg.solve(A_matrix, b_vector)
-        print(f"[Trilateration] Estimated position: x = {estimated_position[0]:.3f}, y = {estimated_position[1]:.3f}")
+        logging.info(f"[Trilateration] Estimated position: x = {estimated_position[0]:.3f}, y = {estimated_position[1]:.3f}")
     except np.linalg.LinAlgError:
-        print("[Trilateration] Error: Singular matrix during trilateration.")
+        logging.info("[Trilateration] Error: Singular matrix during trilateration.")
         estimated_position = np.array([None, None])
     return estimated_position, r1, r2
 
@@ -231,7 +231,7 @@ def send_location(x, y):
     """
     global TABLET_IP
     if TABLET_IP is None:
-        print("[Send] Tablet IP not configured; cannot send location.")
+        logging.info("[Send] Tablet IP not configured; cannot send location.")
         return
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -239,16 +239,16 @@ def send_location(x, y):
         message = f"{x:.2f},{y:.2f}\n"
         sock.sendall(message.encode())
         sock.close()
-        print(f"[Send] Sent location: {message.strip()}")
+        logging.info(f"[Send] Sent location: {message.strip()}")
     except Exception as e:
-        print(f"[Send] Error sending location: {e}")
+        logging.info(f"[Send] Error sending location: {e}")
 
 def main():
     write_csv_header_if_needed()
     # Step 0: Wait for tower configuration from the tablet.
     tower_configuration_server()
 
-    print("[Main] Initializing continuous recording streams for a sliding window of 1 second...")
+    logging.info("[Main] Initializing continuous recording streams for a sliding window of 1 second...")
     # Create a continuous recorder for each mic
     recorders = {mic: ContinuousRecorder(mic,
                                           samplerate=SAMPLE_RATE,
@@ -260,9 +260,9 @@ def main():
     # Initialize each mic's buffer from its continuous stream.
     mic_buffers = {mic: recorders[mic].buffer for mic in MIC_ORDER}
     for mic in MIC_ORDER:
-        print(f"[Init] Mic {mic} initialized. Max amplitude: {np.max(np.abs(mic_buffers[mic])):.3f}")
+        logging.info(f"[Init] Mic {mic} initialized. Max amplitude: {np.max(np.abs(mic_buffers[mic])):.3f}")
 
-    print("[Main] Starting live trilateration with sliding window (updating every 0.1 seconds). Press Ctrl+C to stop.")
+    logging.info("[Main] Starting live trilateration with sliding window (updating every 0.1 seconds). Press Ctrl+C to stop.")
     try:
         while True:
             start_time = time.time()
@@ -273,7 +273,7 @@ def main():
 
             # Skip processing if all recordings are essentially silent.
             if all(np.max(np.abs(r)) < 1e-3 for r in recordings_list):
-                print("[Main] All microphone recordings are silent. Skipping this iteration.")
+                logging.info("[Main] All microphone recordings are silent. Skipping this iteration.")
                 elapsed = time.time() - start_time
                 sleep_time = max(0, CHUNK_DURATION - elapsed)
                 time.sleep(sleep_time)
@@ -292,7 +292,7 @@ def main():
             sleep_time = max(0, CHUNK_DURATION - elapsed)
             time.sleep(sleep_time)
     except KeyboardInterrupt:
-        print("[Main] Terminated by user.")
+        logging.info("[Main] Terminated by user.")
     finally:
         for recorder in recorders.values():
             recorder.close()
