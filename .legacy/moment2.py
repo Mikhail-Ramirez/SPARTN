@@ -24,7 +24,7 @@ class ContinuousRecorder:
                                      device=f"hw:{mic_id},0",
                                      dtype='float32')
         self.stream.start()
-        logging.info(f"[Recorder] Mic {mic_id} continuous stream started.")
+        print(f"[Recorder] Mic {mic_id} continuous stream started.")
 
     def update_buffer(self):
         # read a small chunk from the stream
@@ -37,13 +37,13 @@ class ContinuousRecorder:
     def close(self):
         self.stream.stop()
         self.stream.close()
-        logging.info(f"[Recorder] Mic {self.mic_id} stream closed.")
+        print(f"[Recorder] Mic {self.mic_id} stream closed.")
 
 # Example usage in your main loop:
 def process_location(audio_buffer):
     # Dummy processing function: replace with your existing location logic.
     max_amp = np.max(np.abs(audio_buffer))
-    logging.info(f"[Location] Processed 1-sec buffer, max amplitude: {max_amp:.6f}")
+    print(f"[Location] Processed 1-sec buffer, max amplitude: {max_amp:.6f}")
     # Return estimated (x, y) location (dummy values here)
     return (0.0, 0.0)
 
@@ -65,7 +65,7 @@ def main():
             # e.g., send_location(location)
             time.sleep(CHUNK_DURATION)
     except KeyboardInterrupt:
-        logging.info("[Main] Terminated by user.")
+        print("[Main] Terminated by user.")
     finally:
         for recorder in recorders.values():
             recorder.close()

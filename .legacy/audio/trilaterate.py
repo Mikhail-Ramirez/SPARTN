@@ -25,7 +25,7 @@ recordings = {}
 def record_mic(mic_id):
     """Records audio from a single microphone in a separate thread."""
     global recordings
-    logging.info(f"🔹 Starting recording on Mic {mic_id} (hw:{mic_id},0)")
+    print(f"🔹 Starting recording on Mic {mic_id} (hw:{mic_id},0)")
     
     try:
         audio_data = sd.rec(
@@ -39,16 +39,16 @@ def record_mic(mic_id):
         
         recordings[mic_id] = audio_data.flatten()
         write(f"mic_{mic_id}.wav", SAMPLE_RATE, recordings[mic_id])
-        logging.info(f"✅ Mic {mic_id} recorded. Max Amplitude: {np.max(np.abs(audio_data)):.3f}")
+        print(f"✅ Mic {mic_id} recorded. Max Amplitude: {np.max(np.abs(audio_data)):.3f}")
     
     except Exception as e:
-        logging.info(f"❌ Error recording Mic {mic_id}: {e}")
+        print(f"❌ Error recording Mic {mic_id}: {e}")
         recordings[mic_id] = np.zeros(int(DURATION * SAMPLE_RATE))  # Store empty data to avoid crashes
 
 
 def record_audio():
     """Starts recording for all microphones simultaneously."""
-    logging.info("Recording from all microphones **SIMULTANEOUSLY** for 10 seconds...")
+    print("Recording from all microphones **SIMULTANEOUSLY** for 10 seconds...")
 
     threads = []
     for mic in MIC_ORDER:
@@ -64,7 +64,7 @@ def record_audio():
 
 def plot_audio(recordings):
     """Plots waveforms of the recorded audio."""
-    logging.info("Plotting recorded audio signals...")
+    print("Plotting recorded audio signals...")
     time_axis = np.linspace(0, DURATION, len(recordings[0]))
 
     plt.figure(figsize=(10, 6))
@@ -78,13 +78,13 @@ def plot_audio(recordings):
     plt.suptitle("Synchronized Recorded Audio Waveforms")
     plt.tight_layout()
     plt.savefig("audio_waveforms_synced.png")
-    logging.info("✅ Saved: audio_waveforms_synced.png")
+    print("✅ Saved: audio_waveforms_synced.png")
     plt.show()
 
 
 def cross_correlate(recordings):
     """Computes time delays between microphones using cross-correlation."""
-    logging.info("Performing cross-correlation to find time lags...")
+    print("Performing cross-correlation to find time lags...")
 
     mic1 = recordings[0]  # Reference mic
     time_lags = {}
@@ -95,14 +95,14 @@ def cross_correlate(recordings):
         lag_samples = np.argmax(correlation) - (len(mic1) - 1)
         time_lag = lag_samples / SAMPLE_RATE
         time_lags[MIC_ORDER[i]] = time_lag
-        logging.info(f"🔹 Time lag between Mic {MIC_ORDER[0]} and Mic {MIC_ORDER[i]}: {time_lag:.6f} seconds")
+        print(f"🔹 Time lag between Mic {MIC_ORDER[0]} and Mic {MIC_ORDER[i]}: {time_lag:.6f} seconds")
 
     return time_lags
 
 
 def localize_source(time_lags):
     """Uses trilateration to estimate the sound source location."""
-    logging.info("Performing trilateration to locate sound source...")
+    print("Performing trilateration to locate sound source...")
     speed_of_sound = 343  # m/s
 
     # Convert time lags to distances
@@ -126,7 +126,7 @@ def localize_source(time_lags):
 
     estimated_position = np.linalg.solve(A_matrix, b_vector)
 
-    logging.info(f"✅ Estimated position of the sound source: {estimated_position}")
+    print(f"✅ Estimated position of the sound source: {estimated_position}")
 
     # Plot results
     plt.figure(figsize=(8, 8))
@@ -143,7 +143,7 @@ def localize_source(time_lags):
     plt.xlabel("X Position (meters)")
     plt.ylabel("Y Position (meters)")
     plt.savefig("sound_source_localization_synced.png")
-    logging.info("✅ Saved: sound_source_localization_synced.png")
+    print("✅ Saved: sound_source_localization_synced.png")
     plt.show()
 
 

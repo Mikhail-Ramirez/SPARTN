@@ -5,14 +5,14 @@ hackrf = HackRF()
 
 # Function to receive data
 def callback(data, length, context):
-    logging.info(f"Received data (length={length}): {data[:10]} ...")  # Print the first 10 bytes
+    print(f"Received data (length={length}): {data[:10]} ...")  # Print the first 10 bytes
     return 0
 
 try:
     # Iterate through all connected HackRF devices
     for index in range(hackrf.device_count):
         device = hackrf[index]
-        logging.info(f"Device {index}: Serial={device.serial_number}")
+        print(f"Device {index}: Serial={device.serial_number}")
 
         # Configure the device (example configuration, modify as needed)
         device.sample_rate = 10e6  # 10 MHz
@@ -23,11 +23,11 @@ try:
         device.start_rx_mode(callback)
 
     # Keep the program running
-    logging.info("Receiving data from HackRF devices. Press Ctrl+C to stop.")
+    print("Receiving data from HackRF devices. Press Ctrl+C to stop.")
     while True:
         pass
 
 except KeyboardInterrupt:
-    logging.info("Stopping...")
+    print("Stopping...")
 finally:
     hackrf.close()

@@ -25,7 +25,7 @@ sdr.pyhackrf_set_amp_enable(False)
 sdr.pyhackrf_set_lna_gain(lna_gain)
 sdr.pyhackrf_set_vga_gain(vga_gain)
 
-logging.info(f'center_freq: {center_freq} sample_rate: {sample_rate} baseband_filter: {allowed_baseband_filter}')
+print(f'center_freq: {center_freq} sample_rate: {sample_rate} baseband_filter: {allowed_baseband_filter}')
 
 num_samples = int(recording_time * sample_rate)
 samples = np.zeros(num_samples, dtype=np.complex64)
@@ -47,7 +47,7 @@ samples = samples[100000:]  # Trim first 100k samples for transient removal
 
 sdr.set_rx_callback(rx_callback)
 sdr.pyhackrf_start_rx()
-logging.info('is_streaming', sdr.pyhackrf_is_streaming())
+print('is_streaming', sdr.pyhackrf_is_streaming())
 
 time.sleep(recording_time)
 

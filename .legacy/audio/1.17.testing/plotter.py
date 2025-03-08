@@ -67,7 +67,7 @@ def plot_all_measurements(measurements):
             ax.add_artist(circle2)
             ax.add_artist(circle3)
         except Exception as e:
-            logging.info(f"Error plotting circles from latest measurement: {e}")
+            print(f"Error plotting circles from latest measurement: {e}")
     
     ax.set_xlim(0, 30)
     ax.set_ylim(-5, 30)
@@ -77,13 +77,13 @@ def plot_all_measurements(measurements):
     ax.legend()
     plt.tight_layout()
     plt.savefig("trilateration_plot_all.png")
-    logging.info("Plot saved to trilateration_plot_all.png")
+    print("Plot saved to trilateration_plot_all.png")
     plt.show()
 
 def main():
     measurements = read_all_measurements(CSV_FILE)
     if not measurements:
-        logging.info("No valid measurements found in the CSV log.")
+        print("No valid measurements found in the CSV log.")
         return
     plot_all_measurements(measurements)
 

@@ -17,9 +17,9 @@ distance_to_tower1 = np.linalg.norm(sound_source - tower1)
 distance_to_tower2 = np.linalg.norm(sound_source - tower2)
 distance_to_tower3 = np.linalg.norm(sound_source - tower3)
 
-logging.info(f"Distance to Tower 1: {distance_to_tower1:.2f} meters")
-logging.info(f"Distance to Tower 2: {distance_to_tower2:.2f} meters")
-logging.info(f"Distance to Tower 3: {distance_to_tower3:.2f} meters")
+print(f"Distance to Tower 1: {distance_to_tower1:.2f} meters")
+print(f"Distance to Tower 2: {distance_to_tower2:.2f} meters")
+print(f"Distance to Tower 3: {distance_to_tower3:.2f} meters")
 
 # Step 2: Calculate arrival times at each tower
 arrival_time_tower1 =  distance_to_tower1 / 343
@@ -27,12 +27,12 @@ arrival_time_tower2 =  distance_to_tower2 / 343
 arrival_time_tower3 =  distance_to_tower3 / 343
 
 
-logging.info(f"Arrival time at Tower 1: {arrival_time_tower1:.6f} seconds")
-logging.info(f"Arrival time at Tower 2: {arrival_time_tower2:.6f} seconds")
-logging.info(f"Arrival time at Tower 3: {arrival_time_tower3:.6f} seconds")
+print(f"Arrival time at Tower 1: {arrival_time_tower1:.6f} seconds")
+print(f"Arrival time at Tower 2: {arrival_time_tower2:.6f} seconds")
+print(f"Arrival time at Tower 3: {arrival_time_tower3:.6f} seconds")
 
-logging.info(f"Time lag between Mic 4 (Ref) and Mic 2: {arrival_time_tower2 - arrival_time_tower1: .6f} seconds")
-logging.info(f"Time lag between Mic 4 (Ref) and Mic 3: {arrival_time_tower3 - arrival_time_tower1: .6f} seconds")
+print(f"Time lag between Mic 4 (Ref) and Mic 2: {arrival_time_tower2 - arrival_time_tower1: .6f} seconds")
+print(f"Time lag between Mic 4 (Ref) and Mic 3: {arrival_time_tower3 - arrival_time_tower1: .6f} seconds")
 
 
 
@@ -63,4 +63,4 @@ r3 = arrival_time_tower3 * speed_of_sound
 # Estimate the position of the sound source
 estimated_position = trilaterate(tower1, tower2, tower3, r1, r2, r3)
 
-logging.info(f"Estimated position of the sound source: ({estimated_position[0]:.2f}, {estimated_position[1]:.2f}) meters")
+print(f"Estimated position of the sound source: ({estimated_position[0]:.2f}, {estimated_position[1]:.2f}) meters")

@@ -144,7 +144,7 @@ ax2.legend()
 plt.suptitle("Trilateration Accuracy & Confidence Circles\n(±{:.6f} s Perturbation per Mic)".format(delta_t), fontsize=14)
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 plt.savefig('1m_trilateration_accuracy.png', dpi=300)
-logging.info("Plot saved as '1m_trilateration_accuracy.png'.")
+print("Plot saved as '1m_trilateration_accuracy.png'.")
 
 # -------------------------------
 # Write Summary Error Metrics to a Text File
@@ -154,7 +154,7 @@ with open(summary_filename, "w") as f:
     f.write("Source_Distance(m), Centroid_Error(m), Confidence_Radius(m)\n")
     for d, cent_err, conf_rad in zip(true_source_distances, centroid_errors, confidence_radii):
         f.write(f"{d:.6f}, {cent_err:.6f}, {conf_rad:.6f}\n")
-logging.info(f"Summary error metrics written to '{summary_filename}'.")
+print(f"Summary error metrics written to '{summary_filename}'.")
 
 plt.show()
 

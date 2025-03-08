@@ -9,16 +9,16 @@ RADIUS = 25                # Radius of the circle
 FREQUENCY = 30             # Updates per second (30 Hz)
 
 def main():
-    logging.info("Starting packet sender...")
+    print("Starting packet sender...")
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((SERVER_IP, SERVER_PORT))
-    logging.info("Connected to the Kivy app...")
+    print("Connected to the Kivy app...")
 
     # Start timing loop
     angle = 0  # Start at angle 0
     update_interval = 1.0 / FREQUENCY  # Time between updates
-    logging.info("Sending data...")
+    print("Sending data...")
 
     try:
         while True:
@@ -29,7 +29,7 @@ def main():
             # Send the x, y coordinates as a comma-separated string
             message = f"{x:.2f},{y:.2f}\n"
             sock.sendall(message.encode())
-            logging.info(f"Sent: {message.strip()}")
+            print(f"Sent: {message.strip()}")
 
             # Update the angle to create circular motion
             angle += 2 * math.pi * update_interval  # Rotate at a fixed rate for 30 Hz
@@ -38,7 +38,7 @@ def main():
             time.sleep(update_interval)
 
     except KeyboardInterrupt:
-        logging.info("Stopping script.")
+        print("Stopping script.")
 
     finally:
         sock.close()

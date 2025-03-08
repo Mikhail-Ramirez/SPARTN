@@ -40,7 +40,7 @@ class top_block(gr.top_block, Qt.QWidget):
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
         except BaseException as exc:
-            logging.info(f"Qt GUI: Could not set Icon: {str(exc)}", file=sys.stderr)
+            print(f"Qt GUI: Could not set Icon: {str(exc)}", file=sys.stderr)
         self.top_scroll_layout = Qt.QVBoxLayout()
         self.setLayout(self.top_scroll_layout)
         self.top_scroll = Qt.QScrollArea()
@@ -60,7 +60,7 @@ class top_block(gr.top_block, Qt.QWidget):
             if geometry:
                 self.restoreGeometry(geometry)
         except BaseException as exc:
-            logging.info(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
+            print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
 
         ##################################################
         # Variables
