@@ -1,5 +1,7 @@
 # config/settings.py
 import numpy as np
+from datetime import datetime
+
 
 SAMPLE_RATE = 48000
 WINDOW_DURATION = 1.0
@@ -17,7 +19,8 @@ MIC_POSITIONS = {
 }
 
 # CSV logging file
-CSV_FILE = "sound_source_log.csv"
+time = datetime.now().strftime("%Y-%m-%d.%H.%M")
+LOG_FILE =f"{time}_log.csv"
 
 
 # TCP Ports:
