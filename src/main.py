@@ -24,7 +24,7 @@ def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
     
     # Step 0: Configure tower settings via a TCP connection with the tablet
-    # tower_configuration_server()
+    tower_configuration_server()
     
     # Initialize continuous recorders for each microphone
     recorders = {

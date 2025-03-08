@@ -1,5 +1,8 @@
 # communications/tower_config.py
 import socket
+import logging
+import time
+import numpy as np
 
 from config.settings import *
 
@@ -44,6 +47,10 @@ def tower_configuration_server():
             except Exception as e:
                 logging.info(f"[Tower Config] Error parsing line '{line}': {e}")
                 continue
+
+     # Update MIC_POSITIONS with received coordinates
+    for mic, coord in received.items():
+        MIC_POSITIONS[mic] = np.array(coord)
     # Optionally, send an acknowledgement
     ack = "Tower configuration complete\n"
     conn.sendall(ack.encode())
@@ -52,3 +59,7 @@ def tower_configuration_server():
     logging.info("[Tower Config] Tower configuration complete. MIC_POSITIONS updated:")
     for mic in MIC_ORDER:
         logging.info(f"   Mic {mic}: {MIC_POSITIONS[mic]}")
+
+
+
+    #time.sleep(10000000)

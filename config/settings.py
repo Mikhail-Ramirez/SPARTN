@@ -19,8 +19,8 @@ MIC_POSITIONS = {
 }
 
 # CSV logging file
-time = datetime.now().strftime("%Y-%m-%d.%H.%M")
-LOG_FILE =f"{time}_log.log"
+log_time = datetime.now().strftime("%Y-%m-%d.%H.%M")
+LOG_FILE =f"data/{log_time}_log.log"
 
 
 # TCP Ports:
