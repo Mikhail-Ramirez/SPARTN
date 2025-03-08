@@ -1,5 +1,4 @@
 # src/main.py
-
 import time
 import logging
 
@@ -11,7 +10,7 @@ from .sensors.audio_recorder import ContinuousRecorder
 from .processing.trilateration import determine_reference_mic, cross_correlate, localize_source
 from .communications.tower_config import tower_configuration_server
 from .communications.tablet_comm import send_location
-from .utils.logger import write_csv_header_if_needed, log_measurement
+from .utils.logger import log_measurement
 
 # Placeholders for future integration:
 #from .processing.ai_classification import classify_audio_sample  # For AI audio analysis
@@ -24,11 +23,8 @@ def main():
     # Set up logging for debugging and info messages
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
     
-    # Write CSV header if necessary
-    write_csv_header_if_needed()
-    
     # Step 0: Configure tower settings via a TCP connection with the tablet
-    tower_configuration_server()
+    # tower_configuration_server()
     
     # Initialize continuous recorders for each microphone
     recorders = {
@@ -84,8 +80,8 @@ def main():
             
             # Maintain loop rate based on CHUNK_DURATION
             elapsed = time.time() - loop_start
-            sleep_time = max(0, CHUNK_DURATION - elapsed)
-            time.sleep(sleep_time)
+            #sleep_time = max(0, CHUNK_DURATION - elapsed)
+            #time.sleep(sleep_time)
     
     except KeyboardInterrupt:
         logging.info("Main loop terminated by user.")

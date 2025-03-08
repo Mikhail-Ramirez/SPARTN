@@ -1,5 +1,5 @@
 # sensors/rf_receiver.py
 
 def start_rf_listener():
-    print("[Dummy] start_rf_listener called.")
+    logging.info("[Dummy] start_rf_listener called.")
 

@@ -15,14 +15,14 @@ def tower_configuration_server():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(('', TOWER_CONFIG_PORT))
     server.listen(1)
-    print(f"[Tower Config] Waiting for tower configuration connection on port {TOWER_CONFIG_PORT}...")
+    logging.info(f"[Tower Config] Waiting for tower configuration connection on port {TOWER_CONFIG_PORT}...")
     conn, addr = server.accept()
     TABLET_IP = addr[0]
-    print(f"[Tower Config] Connected by {TABLET_IP}")
+    logging.info(f"[Tower Config] Connected by {TABLET_IP}")
     # Send the mic indexes (e.g., "4,2,3\n")
     mic_indexes_str = ",".join(str(m) for m in MIC_ORDER) + "\n"
     conn.sendall(mic_indexes_str.encode())
-    print(f"[Tower Config] Sent mic indexes: {mic_indexes_str.strip()}")
+    logging.info(f"[Tower Config] Sent mic indexes: {mic_indexes_str.strip()}")
 
     # Wait to receive tower coordinates until all mics are configured.
     received = {}
@@ -40,15 +40,15 @@ def tower_configuration_server():
                 x = float(parts[1])
                 y = float(parts[2])
                 received[mic_index] = (x, y)
-                print(f"[Tower Config] Received tower coordinate for mic {mic_index}: ({x}, {y})")
+                logging.info(f"[Tower Config] Received tower coordinate for mic {mic_index}: ({x}, {y})")
             except Exception as e:
-                print(f"[Tower Config] Error parsing line '{line}': {e}")
+                logging.info(f"[Tower Config] Error parsing line '{line}': {e}")
                 continue
     # Optionally, send an acknowledgement
     ack = "Tower configuration complete\n"
     conn.sendall(ack.encode())
     conn.close()
     server.close()
-    print("[Tower Config] Tower configuration complete. MIC_POSITIONS updated:")
+    logging.info("[Tower Config] Tower configuration complete. MIC_POSITIONS updated:")
     for mic in MIC_ORDER:
-        print(f"   Mic {mic}: {MIC_POSITIONS[mic]}")
+        logging.info(f"   Mic {mic}: {MIC_POSITIONS[mic]}")
