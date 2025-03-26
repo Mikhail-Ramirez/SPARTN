@@ -11,16 +11,19 @@
 #include <cstdio>
 #include <memory>
 #include <stdexcept>
-#include <array>
 
 using namespace std;
 
 std::string exec(const char* cmd);
 vector<vector<string>> breakUp(string);
 vector<tuple<uint64_t, int>> process(vector<vector<string>>);
+void compare(vector<tuple<uint64_t, int>>, vector<tuple<uint64_t, int>>);
+string GetStdoutFromCommand(string cmd);
+
+const int TOLERANCE = 100;
 
 int main() {
-	cout << "Starting..." << endl;
+	cout << "Starting...  Press Ctrl-C to exit!" << endl;
 
 	//string Test = exec("hackrf_sweep -f 2400:2490 -N 1");
 
@@ -28,7 +31,20 @@ int main() {
     string twoGHz = exec("hackrf_sweep -f 2400:2495 -N 1");
     string fiveGHz = exec("hackrf_sweep -f 5150:5895 -N 1");
 
+    vector<vector<string>> nineMHz_sub;
+    vector<vector<string>> twoGHz_sub;
+    vector<vector<string>> fiveGHz_sub;
+
+    vector<tuple<uint64_t, int>> nineMHz_processed;
+    vector<tuple<uint64_t, int>> twoGHz_processed;
+    vector<tuple<uint64_t, int>> fiveGHz_processed;
+
+    vector<tuple<uint64_t, int>> nineMHz_processed_old;
+    vector<tuple<uint64_t, int>> twoGHz_processed_old;
+    vector<tuple<uint64_t, int>> fiveGHz_processed_old;
+
     // Takes only space separated C++ strings.
+    /*
     vector<vector<string>> nineMHz_sub = breakUp(nineMHz);
     vector<vector<string>> twoGHz_sub = breakUp(twoGHz);
     vector<vector<string>> fiveGHz_sub = breakUp(fiveGHz);
@@ -38,7 +54,6 @@ int main() {
     vector<tuple<uint64_t, int>> fiveGHz_processed = process(fiveGHz_sub);
 
     //cout << "Processed!" << endl;
-
 
     for (tuple<uint64_t, int> row : nineMHz_processed) {
         cout << get<0>(row) << ", " << get<1>(row) << endl;
@@ -51,6 +66,40 @@ int main() {
     for (tuple<uint64_t, int> row : fiveGHz_processed) {
         cout << get<0>(row) << ", " << get<1>(row) << endl;
     }
+    */
+
+    nineMHz_sub = breakUp(nineMHz);
+    twoGHz_sub = breakUp(twoGHz);
+    fiveGHz_sub = breakUp(fiveGHz);
+
+    nineMHz_processed_old = process(nineMHz_sub);
+    twoGHz_processed_old = process(twoGHz_sub);
+    fiveGHz_processed_old = process(fiveGHz_sub);
+
+    while (true) {
+        cout << "Run!" << endl;
+        //nineMHz = exec("hackrf_sweep -f 902:928 -N 1");
+        //twoGHz = exec("hackrf_sweep -f 2400:2495 -N 1");
+        //fiveGHz = exec("hackrf_sweep -f 5150:5895 -N 1");
+        nineMHz = exec("hackrf_sweep -f 914:918 -N 1");
+
+        nineMHz_sub = breakUp(nineMHz);
+        //twoGHz_sub = breakUp(twoGHz);
+        //fiveGHz_sub = breakUp(fiveGHz);
+
+        nineMHz_processed = process(nineMHz_sub);
+        //twoGHz_processed = process(twoGHz_sub);
+        //fiveGHz_processed = process(fiveGHz_sub);
+
+        compare(nineMHz_processed, nineMHz_processed_old);
+        //compare(twoGHz_processed, twoGHz_processed_old);
+        //compare(fiveGHz_processed, fiveGHz_processed_old);
+
+        nineMHz_processed_old = nineMHz_processed;
+        //twoGHz_processed_old = twoGHz_processed;
+        //fiveGHz_processed_old = fiveGHz_processed;
+    }
+
 
 	//cout << "Test = " << subs[0] << endl;
 
@@ -69,6 +118,25 @@ std::string exec(const char* cmd) {
     }
     return result;
 }
+
+string GetStdoutFromCommand(string cmd) {
+
+    string data;
+    FILE* stream;
+    const int max_buffer = 256;
+    char buffer[max_buffer];
+    cmd.append(" 2>&1");
+
+    stream = popen(cmd.c_str(), "r");
+
+    if (stream) {
+        while (!feof(stream))
+            if (fgets(buffer, max_buffer, stream) != NULL) data.append(buffer);
+        pclose(stream);
+    }
+    return data;
+}
+
 
 vector<vector<string>> breakUp(string originalText) {
     vector<vector<string>> container;
@@ -116,4 +184,16 @@ vector<tuple<uint64_t, int>> process(vector<vector<string>> original) {
         container.push_back(entry);
     }
     return container;
+}
+
+void compare(vector<tuple<uint64_t, int>> current, vector<tuple<uint64_t, int>> old) {
+    for (int i = 0; i < current.size(); i++) {
+        /*if (get<1>(current[i]) < -100 || get<1>(current[i]) > 100 || get<1>(old[i]) < -100 || get<1>(old[i]) > 100) {
+            //Skip this.  It is likely an error.
+        }
+        else if (get<1>(current[i]) < get<1>(old[i]) - TOLERANCE || get<1>(current[i]) > get<1>(old[i]) + TOLERANCE) {
+            cout << "Detected change at " << get<0>(current[i]) << ": From " << get<1>(old[i]) << " to " << get<1>(current[i]) << endl;
+        }*/
+        cout << get<0>(current[i]) << " Hz: " << get<1>(current[i]) << endl;
+    }
 }
