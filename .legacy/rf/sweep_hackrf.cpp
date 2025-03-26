@@ -39,6 +39,26 @@ void write_sweep_data(const std::string& filename, const std::vector<std::string
     std::cout << "Sweep data written to: " << filename << std::endl;
 }
 
+// Callback for data receive
+int rx_callback(hackrf_transfer* transfer)
+{
+    if (do_exit)
+        return 0;
+
+    // Write raw samples to output file
+    if (fp != NULL)
+        fwrite(transfer->buffer, transfer->valid_length, 1, fp);
+
+    // To not capture too much traffic
+    // usleep(50000);
+
+    // Debugging recv
+    // fprintf(stderr, "Valid length: %i\n", transfer->valid_length);
+    // fprintf(stderr, "frequency: %llu\n", frequency);
+
+    return 0;
+}
+
 int main() {
     hackrf_device* device = nullptr;
 
@@ -69,7 +89,9 @@ int main() {
         std::cout << start_freq << "\n";
 
         for (uint64_t freq = start_freq; freq <= end_freq; freq += step_size) {
-            int gain = 40; // Example gain value
+            //int gain = 40; // Example gain value
+            
+
             status = hackrf_set_freq(device, freq);
             check_hackrf_status(status, "Failed to set frequency");
 
