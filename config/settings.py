@@ -29,4 +29,4 @@ LOG_FILE =f"data/{log_time}_log.log"
 TOWER_CONFIG_PORT = 39440
 
 # This will be set from the incoming tower configuration connection (i.e. the tablet's IP)
-TABLET_IP = None
+TABLET_IP = "10.4.168.189" 

@@ -1,6 +1,7 @@
 # communications/tablet_comm.py
 from config.settings import *
 import logging
+import socket
 
 def send_location(x, y):
     """

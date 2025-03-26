@@ -54,10 +54,12 @@ def main():
             # Calculate time lags between the reference and other microphones
             time_lags = cross_correlate(recordings_ordered, reordered_mics)
             # Estimate the source location via trilateration
-            estimated_position, r1, r2 = localize_source(time_lags, reordered_mics)
+            #estimated_position, r1, r2 = localize_source(time_lags, reordered_mics)
 
-            if estimated_position[0] is not None:
-                send_location(estimated_position[0], estimated_position[1])
+            #if estimated_position[0] is not None:
+                #send_location(estimated_position[0], estimated_position[1])
+            estimated_position, r1, r2 = 0, 0, 0
+            send_location(1, 1)
 
             # Log the measurement to file with a timestamp
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
