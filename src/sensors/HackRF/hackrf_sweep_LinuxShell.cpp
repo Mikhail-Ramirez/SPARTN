@@ -17,7 +17,7 @@ using namespace std;
 std::string exec(const char* cmd);
 vector<vector<string>> breakUp(string);
 vector<tuple<uint64_t, int>> process(vector<vector<string>>);
-void compare(vector<tuple<uint64_t, int>>, vector<tuple<uint64_t, int>>);
+void printout(vector<tuple<uint64_t, int>>);
 string GetStdoutFromCommand(string cmd);
 
 const int TOLERANCE = 100;
@@ -25,11 +25,22 @@ const int TOLERANCE = 100;
 int main() {
 	cout << "Starting...  Press Ctrl-C to exit!" << endl;
 
-	//string Test = exec("hackrf_sweep -f 2400:2490 -N 1");
+    //Create the command strings to be executed.
 
-    string nineMHz = exec("hackrf_sweep -f 902:928 -N 1");
-    string twoGHz = exec("hackrf_sweep -f 2400:2495 -N 1");
-    string fiveGHz = exec("hackrf_sweep -f 5150:5895 -N 1");
+    string nineMHzCommandRaw = "hackrf_sweep -f 902:928 -N 1 -l 40 -g 8 2>/dev/null";
+    string twoGHzCommandRaw = "hackrf_sweep -f 2400:2495 -N 1 -l 40 -g 8 2>/dev/null";
+    string fiveGHzCommandRaw = "hackrf_sweep -f 5150:5895 -N 1 -l 40 -g 8 2>/dev/null";
+
+    const char* nineMHzCommand = nineMHzCommandRaw.c_str();
+    const char* twoGHzCommand = twoGHzCommandRaw.c_str();
+    const char* fiveGHzCommand = fiveGHzCommandRaw.c_str();
+
+
+    //Create the local variables to store the output of the command being run.
+
+    string nineMHz;
+    string twoGHz;
+    string fiveGHz;
 
     vector<vector<string>> nineMHz_sub;
     vector<vector<string>> twoGHz_sub;
@@ -39,69 +50,41 @@ int main() {
     vector<tuple<uint64_t, int>> twoGHz_processed;
     vector<tuple<uint64_t, int>> fiveGHz_processed;
 
-    vector<tuple<uint64_t, int>> nineMHz_processed_old;
-    vector<tuple<uint64_t, int>> twoGHz_processed_old;
-    vector<tuple<uint64_t, int>> fiveGHz_processed_old;
+    ///////////////////Main loop
+    //1.  Run the command.
+    //2.  Break the output between commas to get a parsable output.
+    //3.  Process the parsable output into integers of vectors and decibels.
+    //4.  Due to how hackrf_sweep is multithreaded, the output is jumbled.  Sort it!
+    //5.  Print it out to show it works.
 
-    // Takes only space separated C++ strings.
-    /*
-    vector<vector<string>> nineMHz_sub = breakUp(nineMHz);
-    vector<vector<string>> twoGHz_sub = breakUp(twoGHz);
-    vector<vector<string>> fiveGHz_sub = breakUp(fiveGHz);
-
-    vector<tuple<uint64_t, int>> nineMHz_processed = process(nineMHz_sub);
-    vector<tuple<uint64_t, int>> twoGHz_processed = process(twoGHz_sub);
-    vector<tuple<uint64_t, int>> fiveGHz_processed = process(fiveGHz_sub);
-
-    //cout << "Processed!" << endl;
-
-    for (tuple<uint64_t, int> row : nineMHz_processed) {
-        cout << get<0>(row) << ", " << get<1>(row) << endl;
-    }
-
-    for (tuple<uint64_t, int> row : twoGHz_processed) {
-        cout << get<0>(row) << ", " << get<1>(row) << endl;
-    }
-
-    for (tuple<uint64_t, int> row : fiveGHz_processed) {
-        cout << get<0>(row) << ", " << get<1>(row) << endl;
-    }
-    */
-
-    nineMHz_sub = breakUp(nineMHz);
-    twoGHz_sub = breakUp(twoGHz);
-    fiveGHz_sub = breakUp(fiveGHz);
-
-    nineMHz_processed_old = process(nineMHz_sub);
-    twoGHz_processed_old = process(twoGHz_sub);
-    fiveGHz_processed_old = process(fiveGHz_sub);
+    //TODO: Put most of the main loop into a header file so it can be called from other code easily.
+    //TODO: Rework how the process function processes data, preferibly so that it can parse it regardless of how many entries there are in a line.
+    //          Each line has a date, a time, a starting freq, and end freq, a bin width, a number of samples, and one or more dBs.
+    //          That means that line.length() - 6 is the number of frequencies measured in that range.
+    //          That number can be used in a for-loop to ensure that every dB is paired with a frequency without having to be reprogrammed.
 
     while (true) {
         cout << "Run!" << endl;
-        //nineMHz = exec("hackrf_sweep -f 902:928 -N 1");
-        //twoGHz = exec("hackrf_sweep -f 2400:2495 -N 1");
-        //fiveGHz = exec("hackrf_sweep -f 5150:5895 -N 1");
-        nineMHz = exec("hackrf_sweep -f 914:918 -N 1");
+        nineMHz = exec(nineMHzCommand);
+        twoGHz = exec(twoGHzCommand);
+        fiveGHz = exec(fiveGHzCommand);
 
         nineMHz_sub = breakUp(nineMHz);
-        //twoGHz_sub = breakUp(twoGHz);
-        //fiveGHz_sub = breakUp(fiveGHz);
+        twoGHz_sub = breakUp(twoGHz);
+        fiveGHz_sub = breakUp(fiveGHz);
 
         nineMHz_processed = process(nineMHz_sub);
-        //twoGHz_processed = process(twoGHz_sub);
-        //fiveGHz_processed = process(fiveGHz_sub);
+        twoGHz_processed = process(twoGHz_sub);
+        fiveGHz_processed = process(fiveGHz_sub);
 
-        compare(nineMHz_processed, nineMHz_processed_old);
-        //compare(twoGHz_processed, twoGHz_processed_old);
-        //compare(fiveGHz_processed, fiveGHz_processed_old);
+        std::sort(nineMHz_processed.begin(), nineMHz_processed.end());
+        std::sort(twoGHz_processed.begin(), twoGHz_processed.end());
+        std::sort(fiveGHz_processed.begin(), fiveGHz_processed.end());
 
-        nineMHz_processed_old = nineMHz_processed;
-        //twoGHz_processed_old = twoGHz_processed;
-        //fiveGHz_processed_old = fiveGHz_processed;
+        printout(nineMHz_processed);
+        printout(twoGHz_processed);
+        printout(fiveGHz_processed);
     }
-
-
-	//cout << "Test = " << subs[0] << endl;
 
 	return 0;
 }
@@ -152,6 +135,7 @@ vector<vector<string>> breakUp(string originalText) {
             //Do nothing
         }
         else if (originalText[i] == '\n') {
+            row.push_back(substring);
             container.push_back(row);
             row.clear();
         }
@@ -171,29 +155,27 @@ vector<tuple<uint64_t, int>> process(vector<vector<string>> original) {
     tuple<uint64_t, int> entry;
 
     for (vector<string> row : original) {
+
         entry = make_tuple(stoull(row[2]), stoi(row[6]));
         container.push_back(entry);
 
         entry = make_tuple(stoull(row[2]) + stoull(row[4]), stoi(row[7]));
         container.push_back(entry);
 
-        entry = make_tuple(stoull(row[2]) + stoull(row[4]), stoi(row[8]));
+        entry = make_tuple(stoull(row[2]) + 2 * stoull(row[4]), stoi(row[8]));
         container.push_back(entry);
 
         entry = make_tuple(stoull(row[2]) + 3 * stoull(row[4]), stoi(row[9]));
+        container.push_back(entry);
+
+        entry = make_tuple(stoull(row[2]) + 4 * stoull(row[4]), stoi(row[10]));
         container.push_back(entry);
     }
     return container;
 }
 
-void compare(vector<tuple<uint64_t, int>> current, vector<tuple<uint64_t, int>> old) {
+void printout(vector<tuple<uint64_t, int>> current) {
     for (int i = 0; i < current.size(); i++) {
-        /*if (get<1>(current[i]) < -100 || get<1>(current[i]) > 100 || get<1>(old[i]) < -100 || get<1>(old[i]) > 100) {
-            //Skip this.  It is likely an error.
-        }
-        else if (get<1>(current[i]) < get<1>(old[i]) - TOLERANCE || get<1>(current[i]) > get<1>(old[i]) + TOLERANCE) {
-            cout << "Detected change at " << get<0>(current[i]) << ": From " << get<1>(old[i]) << " to " << get<1>(current[i]) << endl;
-        }*/
         cout << get<0>(current[i]) << " Hz: " << get<1>(current[i]) << endl;
     }
 }
