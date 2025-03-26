@@ -71,34 +71,18 @@ std::vector<std::vector<std::string>> breakUp(std::string originalText) {
 }
 
 std::vector<std::tuple<std::uint64_t, int>> process(std::vector<std::vector<std::string>> original) {
-    //Each row has 11 columns
-    //Date, time, Start Frequency, End Frequency, Bin width, number of samples, bin1, bin2, bin3, bin4, bin5
-    //Number of bins = End - Start / Bin width
-
-    //TODO: Rework how the process function processes data, preferibly so that it can parse it regardless of how many entries there are in a line.
-    //          Each line has a date, a time, a starting freq, and end freq, a bin width, a number of samples, and one or more dBs.
-    //          That means that line.length() - 6 is the number of frequencies measured in that range.
-    //          That number can be used in a for-loop to ensure that every dB is paired with a frequency without having to be reprogrammed.
-
     std::vector<std::tuple<std::uint64_t, int>> container;
     std::tuple<std::uint64_t, int> entry;
 
+    //Calculate the number of entries per line.
+    int entryCount = original[0].size() - 6;
+
     for (std::vector<std::string> row : original) {
 
-        entry = std::make_tuple(stoull(row[2]), stoi(row[6]));
-        container.push_back(entry);
-
-        entry = std::make_tuple(stoull(row[2]) + stoull(row[4]), stoi(row[7]));
-        container.push_back(entry);
-
-        entry = std::make_tuple(stoull(row[2]) + 2 * stoull(row[4]), stoi(row[8]));
-        container.push_back(entry);
-
-        entry = std::make_tuple(stoull(row[2]) + 3 * stoull(row[4]), stoi(row[9]));
-        container.push_back(entry);
-
-        entry = std::make_tuple(stoull(row[2]) + 4 * stoull(row[4]), stoi(row[10]));
-        container.push_back(entry);
+        for (int i = 0; i < entryCount; i++) {
+            entry = std::make_tuple(stoull(row[2]) + i* stoull(row[4]), stoi(row[6 + i]));
+            container.push_back(entry);
+        }
     }
     return container;
 }
