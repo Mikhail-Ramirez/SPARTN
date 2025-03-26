@@ -6,10 +6,12 @@ import numpy as np
 
 from config.settings import TOWER_CONFIG_PORT, MIC_ORDER, TABLET_IP, MIC_POSITIONS  # Ensure these are defined in your settings
 
-
 def configuration_complete():
-    """Returns True if all towers have been configured (i.e. all MIC_POSITIONS set)."""
-    return all(MIC_POSITIONS[mic] is not None for mic in MIC_ORDER)
+    complete = all(
+        (pos[0] is not None and pos[1] is not None) for pos in MIC_POSITIONS.values()
+    )
+    return complete
+
 
 def process_connection(conn):
     """Process messages from one configuration connection."""
@@ -99,7 +101,3 @@ def tower_configuration_server():
     logging.info("[Tower Config] Tower configuration complete. MIC_POSITIONS updated:")
     for mic in MIC_ORDER:
         logging.info(f"   Mic {mic}: {MIC_POSITIONS[mic]}")
-
-if __name__ == "__main__":
-    tower_configuration_server()
-
