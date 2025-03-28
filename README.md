@@ -31,7 +31,6 @@ Add commands to the ~/.bashrc
 ```bash
 echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
 echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
-echo 'eval "$(pyenv init - bash)"' >> ~/.bashrc
 ```
 
 Then, if you have ~/.profile or ~/.bash_profile, add the commands there as well.
@@ -62,8 +61,8 @@ pyenv local 3.9.21
 Check to make sure python is now set to the right version
 ```bash
 python -V
-(should output Python 3.9.21)
 ```
+(should output Python 3.9.21)
 
 If you are having issues with pyenv, check the following link for further help
 ```bash
