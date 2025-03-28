@@ -69,33 +69,33 @@ If you are having issues with pyenv, check the following link for further help
 https://github.com/pyenv/pyenv/wiki/Common-build-problems
 ```
 
-### 2. Create Virtual Environment
+### 3. Create Virtual Environment
 Create a virtual environment to manage project dependencies:
 ```bash
 python -m venv env
 ```
-### 3. Activate the Virtual Environment
+### 4. Activate the Virtual Environment
 Activate the virtual environment:
 ```bash
 source env/bin/activate
 ```
-### 3.5. Upgrade PIP
+### 4.5. Upgrade PIP
 Make sure you have the most recent pip installed:
 ```bash
 pip install --upgrade pip
 ```
-### 4. Install Dependencies
+### 5. Install Dependencies
 Install the required packages using pip:
 ```bash
 pip install -r requirements.txt
 ```
-### 4.5. Additional steps for a rPI
+### 5.5. Additional steps for a rPI
 Install sound device for using the PortAudio Lib
 ```bash
 sudo apt-get update
 sudo apt-get install libportaudio-dev
 ```
-### 5. Run the App on the Pi
+### 6. Run the App on the Pi
 Start the Application
 ```bash
 python -m src.main
