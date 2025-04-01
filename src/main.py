@@ -13,7 +13,7 @@ from .communications.tablet_comm import send_location
 from .utils.logger import log_measurement
 
 # Placeholders for future integration:
-#from .processing.ai_classification import classify_audio_sample  # For AI audio analysis
+from .processing.ai_classification import classify_audio_sample  # For AI audio analysis
 #from .communications.encryption import encrypt_message, decrypt_message  # For secure messaging
 #from .sensors.rf_receiver import start_rf_listener  # For handling RF data reception
 
@@ -72,8 +72,8 @@ def main():
             log_measurement(timestamp, reference_mic, reordered_mics, estimated_position, r1, r2)
             
             # Optional: Extract a 1-second audio sample and classify it using the AI system.
-            # classification_result = classify_audio_sample(recordings_ordered[0])
-            # logging.info(f"AI Classification Result: {classification_result}")
+            classification_result = classify_audio_sample(recordings_ordered[0])
+            logging.info(f"AI Classification Result: {classification_result}")
             
             # Optional: Start or process RF data if needed (this could be running on a separate thread)
             # start_rf_listener()

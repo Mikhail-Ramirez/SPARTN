@@ -1,7 +1,0 @@
-# processing/ai_classification.py
-
-def classify_audio_sample(audio_sample):
-    logging.info("[Dummy] classify_audio_sample called.")
-    # Return a dummy classification result.
-    return "dummy_classification"
-
