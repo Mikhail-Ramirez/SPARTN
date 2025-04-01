@@ -82,16 +82,51 @@ void printout(std::vector<std::tuple<std::uint64_t, int>> & current) {
 }
 
 //sweep() accepts a string of a command to run (preferably a hackrf_sweep command), parses all the data, and returns a vector of frequency-dB tuples.
-std::vector<std::tuple<std::uint64_t, int>> sweep(std::string & command) {
+std::vector<std::tuple<std::uint64_t, int>> sweep(std::string command) {
     std::string freq_dB_raw = exec(command.c_str());
 
     std::vector<std::vector<std::string>> freq_dB_brokenUp = breakUp(freq_dB_raw);
 
     std::vector<std::tuple<std::uint64_t, int>> freq_dB_processed = process(freq_dB_brokenUp);
-
+    
     std::sort(freq_dB_processed.begin(), freq_dB_processed.end());
 
     return freq_dB_processed;
+}
+
+//This function runs the hackrf_info command and parses the output to make a list of serial numbers.
+std::vector<std::string> getHackrfIDs() {
+    std::cout << "Running getHackrfIDs" << std::endl;
+    std::string infoCommand = "hackrf_info";
+    std::string unparsedData = exec(infoCommand.c_str());
+
+    uint unparsedLength = unparsedData.length();
+
+    std::vector<std::string> SN_List;
+    std::string line = "";
+
+    for (int i = 0; i < unparsedLength; i++) {
+        if (unparsedData[i] == ' ') {
+            //Space detected, this isn't what we want.
+            line.erase();
+        }
+        else if (unparsedData[i] == '\n') {
+            //Check if the line is what we want.
+            if (line[0] == '0' && line[1] == '0' && line[2] == '0' && line[3] == '0') {
+                //This is what we want!
+                SN_List.push_back(line);
+            }
+            line.erase();
+        }
+        else {
+            //This is just a character.
+            line = line + unparsedData[i];
+        }
+    }
+
+    std::sort(SN_List.begin(), SN_List.end());
+
+    return SN_List;
 }
 
 
