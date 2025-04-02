@@ -13,8 +13,8 @@ def send_location(x, y):
         return
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((TABLET_IP, 39439)) # location port
-        message = f"{x:.2f},{y:.2f}\n"
+        sock.connect((TABLET_IP, 39439))
+        message = f"location,{x:.2f},{y:.2f}\n" # verify this now works
         sock.sendall(message.encode())
         sock.close()
         logging.info(f"[Send] Sent location: {message.strip()}")
@@ -32,8 +32,8 @@ def send_classification(result):
         return
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((TABLET_IP, 39440))# classification port
-        message = f"{result}\n"
+        sock.connect((TABLET_IP, 39439))  
+        message = f"classification,{result}\n" #verify this
         sock.sendall(message.encode())
         sock.close()
         logging.info(f"[Send] Sent classification: {message.strip()}")

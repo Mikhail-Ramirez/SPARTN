@@ -3,3 +3,4 @@ sounddevice
 scipy
 librosa
 tflite-runtime
+librosa
