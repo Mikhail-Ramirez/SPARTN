@@ -1,0 +1,27 @@
+https://github.com/bmegli/wifi-scan/tree/master
+
+# update package repositories
+sudo apt-get update 
+# get compilers and make
+sudo apt-get install build-essential
+# get dependencies
+sudo apt-get install libmnl0 libmnl-dev
+# get git
+sudo apt-get install git
+# clone the repository
+git clone https://github.com/bmegli/wifi-scan.git
+
+gcc wifi_scan.c your_program.c -lmnl -o your-program
+
+OR
+
+gcc -c wifi_scan.c
+g++ -c your_program.cpp
+g++ wifi_scan.o your_program.o -lmnl -o your-program
+
+
+
+To run:
+ifconfig to figure out what your WiFi interface is called.  wlan0 is popular, but mine is wlp166s0
+
+sudo ./wsa wlan0
