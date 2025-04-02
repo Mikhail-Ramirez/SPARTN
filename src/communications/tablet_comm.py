@@ -13,10 +13,29 @@ def send_location(x, y):
         return
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((TABLET_IP, 39439))
+        sock.connect((TABLET_IP, 39439)) # location port
         message = f"{x:.2f},{y:.2f}\n"
         sock.sendall(message.encode())
         sock.close()
         logging.info(f"[Send] Sent location: {message.strip()}")
+    except Exception as e:
+        logging.info(f"[Send] Error sending location: {e}")
+
+
+def send_classification(result):
+    """
+    Opens a TCP connection to the tablet (TABLET_IP) on port 39439 to send the estimated (x,y).
+    """
+    global TABLET_IP
+    if TABLET_IP is None:
+        logging.info("[Send] Tablet IP not configured; cannot send location.")
+        return
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((TABLET_IP, 39440))# classification port
+        message = f"{result}\n"
+        sock.sendall(message.encode())
+        sock.close()
+        logging.info(f"[Send] Sent classification: {message.strip()}")
     except Exception as e:
         logging.info(f"[Send] Error sending location: {e}")
