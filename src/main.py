@@ -7,7 +7,7 @@ from config.settings import SAMPLE_RATE, WINDOW_DURATION, CHUNK_DURATION, MIC_OR
 
 # Import submodules for functionality using relative imports
 from .sensors.audio_recorder import ContinuousRecorder
-from .processing.trilateration import determine_reference_mic, cross_correlate, localize_source
+from .processing.trilateration import analyze_microphones, localize_source
 from .communications.tower_config import tower_configuration_server
 from .communications.tablet_comm import send_location, send_classification
 from .utils.logger import log_measurement
@@ -58,12 +58,12 @@ def main():
                 continue
 
             # Determine the reference microphone using cross-correlation
-            reference_mic, reordered_mics = determine_reference_mic(recordings_list)
-            # Reorder recordings to match the mic order determined above
-            recordings_ordered = [recordings_list[MIC_ORDER.index(mic)] for mic in reordered_mics]
+            reference_mic, reordered_mics, time_lags = analyze_microphones(recordings_list)
 
+            # Reorder recordings to match the mic order determined above
+           # recordings_ordered = [recordings_list[MIC_ORDER.index(mic)] for mic in reordered_mics]
             # Calculate time lags between the reference and other microphones
-            time_lags = cross_correlate(recordings_ordered, reordered_mics)
+            #time_lags = cross_correlate(recordings_ordered, reordered_mics)
             # Estimate the source location via trilateration
             estimated_position, r1, r2 = localize_source(time_lags, reordered_mics)
 
