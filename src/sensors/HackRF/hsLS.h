@@ -24,7 +24,9 @@ std::vector<std::tuple<std::uint64_t, int>> process(std::vector<std::vector<std:
 void printout(std::vector<std::tuple<std::uint64_t, int>> &);
 
 //sweep() accepts a string of a command to run (preferably a hackrf_sweep command), parses all the data, and returns a vector of frequency-dB tuples.
-std::vector<std::tuple<std::uint64_t, int>> sweep(std::string &);
+std::vector<std::tuple<std::uint64_t, int>> sweep(std::string);
+
+std::vector<std::string> getHackrfIDs();
 
 //Taken from https://stackoverflow.com/questions/478898/how-do-i-execute-a-command-and-get-the-output-of-the-command-within-c-using-po
 //This command accepts a const char* command, feeds it through the Linux shell, and returns what would have been outputted to the Linux shell.
