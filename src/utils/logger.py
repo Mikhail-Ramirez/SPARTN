@@ -1,7 +1,12 @@
 # utils/logger.py
 import logging
 import sys
+import os
 from config.settings import LOG_FILE
+
+# Ensure the directory for the log file exists
+log_dir = os.path.dirname(LOG_FILE)
+os.makedirs(log_dir, exist_ok=True)
 
 # Create a root logger
 logger = logging.getLogger()
