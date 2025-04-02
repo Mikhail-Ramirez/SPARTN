@@ -11,6 +11,12 @@ from .processing.trilateration import determine_reference_mic, cross_correlate, 
 from .communications.tower_config import tower_configuration_server
 from .communications.tablet_comm import send_location
 from .utils.logger import log_measurement
+from .processing.ai_classification import classify_audio_sample  # For AI audio analysis
+
+# Placeholders for future integration:
+#from .communications.encryption import encrypt_message, decrypt_message  # For secure messaging
+#from .sensors.rf_receiver import start_rf_listener  # For handling RF data reception
+
 
 def main():
     # Set up logging for debugging and info messages
@@ -70,7 +76,15 @@ def main():
             # Log the measurement to file with a timestamp
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             log_measurement(timestamp, reference_mic, reordered_mics, estimated_position, r1, r2)
+            
+            # Optional: Extract a 1-second audio sample and classify it using the AI system.
+            classification_result = classify_audio_sample(recordings_ordered[0])
 
+            logging.info(f"AI Classification Result: {classification_result}")
+            
+            # Optional: Start or process RF data if needed (this could be running on a separate thread)
+            # start_rf_listener()
+            
             # Maintain loop rate based on CHUNK_DURATION
             elapsed = time.time() - loop_start
             sleep_time = max(0, CHUNK_DURATION - elapsed)

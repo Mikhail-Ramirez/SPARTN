@@ -9,33 +9,93 @@ Clone the project repository from GitHub:
 git clone https://github.com/Mikhail-Ramirez/SPARTN.git
 cd SPARTN
 ```
-### 2. Create Virtual Environment
+
+### 2. Install pyenv
+This is in order to ensure that the project is running on python 3.9
+(unnecessary if machine is already on python 3.9)
+
+Install build dependencies for pyenv
+```bash
+sudo apt update; sudo apt install build-essential libssl-dev zlib1g-dev \
+libbz2-dev libreadline-dev libsqlite3-dev curl git \
+libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev
+```
+
+Install pyenv
+```bash
+curl https://pyenv.run | bash
+```
+
+Add commands to the ~/.bashrc
+(assuming your machine uses bash)
+```bash
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+```
+
+Then, if you have ~/.profile or ~/.bash_profile, add the commands there as well.
+```bash
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.profile
+echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.profile
+echo 'eval "$(pyenv init - bash)"' >> ~/.profile
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile
+echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile
+echo 'eval "$(pyenv init - bash)"' >> ~/.bash_profile
+```
+
+Restart terminal
+```bash
+exec $SHELL
+```
+
+Install Python 3.9 (preferably the latest version, 3.9.21, system is untested on earlier versions)
+```bash
+pyenv install 3.9.21
+```
+
+Set the Python version of the SPARTN directory to 3.9.21
+```bash
+pyenv local 3.9.21
+```
+
+Check to make sure python is now set to the right version
+```bash
+python -V
+```
+(should output Python 3.9.21)
+
+If you are having issues with pyenv, check the following link for further help
+```bash
+https://github.com/pyenv/pyenv/wiki/Common-build-problems
+```
+
+### 3. Create Virtual Environment
 Create a virtual environment to manage project dependencies:
 ```bash
-python3 -m venv env
+python -m venv env
 ```
-### 3. Activate the Virtual Environment
+### 4. Activate the Virtual Environment
 Activate the virtual environment:
 ```bash
 source env/bin/activate
 ```
-### 3.5. Upgrade PIP
+### 4.5. Upgrade PIP
 Make sure you have the most recent pip installed:
 ```bash
 pip install --upgrade pip
 ```
-### 4. Install Dependencies
+### 5. Install Dependencies
 Install the required packages using pip:
 ```bash
 pip install -r requirements.txt
 ```
-### 4.5. Additional steps for a rPI
+### 5.5. Additional steps for a rPI
 Install sound device for using the PortAudio Lib
 ```bash
 sudo apt-get update
 sudo apt-get install libportaudio-dev
 ```
-### 5. Run the App on the Pi
+### 6. Run the App on the Pi
 Start the Application
 ```bash
 python -m src.main
