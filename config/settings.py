@@ -13,14 +13,14 @@ SPEED_OF_SOUND = 343         # m/s
 
 # Microphone positions (ALSA card numbers → Physical positions)
 MIC_POSITIONS = {
-    2: np.array([0, 0]),            # Mic 4
-    3: np.array([3.6576, 3.6576]),   # Mic 2
-    4: np.array([7.3152, 0])         # Mic 3
+    2: np.array([None, None]),            # Mic 4
+    3: np.array([None, None]),   # Mic 2
+    4: np.array([None, None])         # Mic 3
 }
 
 # CSV logging file
-time = datetime.now().strftime("%Y-%m-%d.%H.%M")
-LOG_FILE =f"{time}_log.log"
+log_time = datetime.now().strftime("%Y-%m-%d.%H.%M")
+LOG_FILE =f"data/{log_time}_log.log"
 
 
 # TCP Ports:
@@ -29,4 +29,4 @@ LOG_FILE =f"{time}_log.log"
 TOWER_CONFIG_PORT = 39440
 
 # This will be set from the incoming tower configuration connection (i.e. the tablet's IP)
-TABLET_IP = None
+TABLET_IP = "10.4.153.44" 

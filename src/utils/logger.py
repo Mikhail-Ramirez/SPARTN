@@ -1,7 +1,12 @@
 # utils/logger.py
 import logging
 import sys
+import os
 from config.settings import LOG_FILE
+
+# Ensure the directory for the log file exists
+log_dir = os.path.dirname(LOG_FILE)
+os.makedirs(log_dir, exist_ok=True)
 
 # Create a root logger
 logger = logging.getLogger()
@@ -9,12 +14,12 @@ logger.setLevel(logging.INFO)
 
 # File handler: writes logs to a file
 file_handler = logging.FileHandler(LOG_FILE, mode='a')
-file_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+file_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
 logger.addHandler(file_handler)
 
 # Stream handler: prints logs to the terminal (stdout)
 stream_handler = logging.StreamHandler(sys.stdout)
-stream_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+stream_handler.setFormatter(logging.Formatter("%(asctime)s %(message)s"))
 logger.addHandler(stream_handler)
 
 
