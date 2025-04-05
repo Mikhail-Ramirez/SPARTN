@@ -6,7 +6,7 @@ from datetime import datetime
 SAMPLE_RATE = 48000
 WINDOW_DURATION = 1.0
 CHUNK_DURATION = 0.1
-MIC_ORDER = [2, 3, 4]
+MIC_ORDER = [1, 2, 3, 4]
 
 CHANNELS = 1               # Mono recording
 SPEED_OF_SOUND = 343         # m/s
