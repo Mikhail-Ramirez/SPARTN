@@ -14,20 +14,22 @@ from .utils.logger import log_measurement
 from .processing.ai_classification import classify_audio_sample  # For AI audio analysis
 
 # Placeholders for future integration:
-#from .communications.encryption import encrypt_message, decrypt_message  # For secure messaging
-#from .sensors.rf_receiver import start_rf_listener  # For handling RF data reception
+# from .communications.encryption import encrypt_message, decrypt_message  # For secure messaging
+# from .sensors.rf_receiver import start_rf_listener  # For handling RF data reception
 
 
 def main():
     # Set up logging for debugging and info messages
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 
+    # Set filter parameters (optional: move to settings.py if preferred)
+    lowcut = 300     # Hz - lower bound of bandpass filter
+    highcut = 3000   # Hz - upper bound of bandpass filter
+
     # Step 1: Configure tower settings via a TCP connection with the tablet.
-    # This call blocks until the tower configuration (handshake + coordinate messages) is complete.
     tower_configuration_server()
 
-    # Step 6: After configuration, enter the main loop for continuous audio processing.
-    # (For now, the main loop is provided as a placeholder; adapt as needed.)
+    # Step 2: After configuration, enter the main loop for continuous audio processing.
     logging.info("Starting main loop for continuous audio processing...")
     recorders = {
         mic: ContinuousRecorder(mic, samplerate=SAMPLE_RATE, channels=1,
@@ -39,14 +41,15 @@ def main():
 
     try:
         while True:
-            # This is a checker that will not let any processing happen if the positions have not been set or sent to the configs
+            # Check if microphone positions are fully defined
             if any(pos[0] is None or pos[1] is None for pos in MIC_POSITIONS.values()):
-                    logging.info("[INFO] - Mic positions not yet fully defined. Waiting...")
-                    time.sleep(CHUNK_DURATION)
-                    continue
+                logging.info("[INFO] - Mic positions not yet fully defined. Waiting...")
+                time.sleep(CHUNK_DURATION)
+                continue
+
             loop_start = time.time()
 
-            # Update buffers from each recorder
+            # Update audio buffers from each recorder
             for mic in MIC_ORDER:
                 mic_buffers[mic] = recorders[mic].update_buffer()
             recordings_list = [mic_buffers[mic] for mic in MIC_ORDER]
@@ -57,37 +60,32 @@ def main():
                 time.sleep(CHUNK_DURATION)
                 continue
 
-            # Determine the reference microphone using cross-correlation
-            reference_mic, reordered_mics, time_lags = analyze_microphones(recordings_list)
+            # Step 3: Determine reference microphone and time lags using filtered cross-correlation
+            reference_mic, reordered_mics, time_lags = analyze_microphones(
+                recordings_list, fs=SAMPLE_RATE, lowcut=lowcut, highcut=highcut
+            )
 
-            # Reorder recordings to match the mic order determined above
-           # recordings_ordered = [recordings_list[MIC_ORDER.index(mic)] for mic in reordered_mics]
-            # Calculate time lags between the reference and other microphones
-            #time_lags = cross_correlate(recordings_ordered, reordered_mics)
-            # Estimate the source location via trilateration
+            # Step 4: Estimate the sound source location using trilateration
             estimated_position, r1, r2 = localize_source(time_lags, reordered_mics)
 
+            # Step 5: Send location if valid
             if estimated_position[0] is not None:
-               send_location(estimated_position[0], estimated_position[1])
-            # DEBUG FOR SENDING
-            # estimated_position, r1, r2 = 0, 0, 0
-            # send_location(1, 1)
+                send_location(estimated_position[0], estimated_position[1])
 
-            # Log the measurement to file with a timestamp
+            # Step 6: Log the measurement
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             log_measurement(timestamp, reference_mic, reordered_mics, estimated_position, r1, r2)
-            
-            # Optional: Extract a 1-second audio sample and classify it using the AI system.
-            #classification_result = classify_audio_sample(recordings_ordered[0])
-            classification_result = "DummyDrone" 
 
+            # Step 7: Optional AI classification (placeholder)
+            classification_result = "DummyDrone"
+            # classification_result = classify_audio_sample(recordings_list[0])  # Uncomment when integrated
             logging.info(f"AI Classification Result: {classification_result}")
             send_classification(classification_result)
-            
-            # Optional: Start or process RF data if needed (this could be running on a separate thread)
+
+            # Optional: Start or process RF data if needed (e.g., in another thread)
             # start_rf_listener()
-            
-            # Maintain loop rate based on CHUNK_DURATION
+
+            # Step 8: Maintain loop rate
             elapsed = time.time() - loop_start
             sleep_time = max(0, CHUNK_DURATION - elapsed)
             time.sleep(sleep_time)
@@ -99,6 +97,8 @@ def main():
         for recorder in recorders.values():
             recorder.close()
 
+
 if __name__ == "__main__":
     main()
+
 

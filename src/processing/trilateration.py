@@ -1,13 +1,51 @@
 import logging
 import numpy as np
-from scipy.signal import correlate
+from scipy.signal import correlate, butter, filtfilt
 from config.settings import *  # Assuming these constants are defined in the config
 
-def analyze_microphones(recordings_list):
+def butter_filter(lowcut, highcut, fs, order=4, btype='bandpass'):
+    """
+    Design a Butterworth filter.
+    
+    Parameters:
+        lowcut: Low frequency for the filter (Hz).
+        highcut: High frequency for the filter (Hz).
+        fs: Sample rate (Hz).
+        order: Order of the filter.
+        btype: 'lowpass', 'highpass', 'bandpass', etc.
+    
+    Returns:
+        b, a: Filter coefficients.
+    """
+    nyquist = 0.5 * fs
+    low = lowcut / nyquist
+    high = highcut / nyquist
+    b, a = butter(order, [low, high], btype=btype, analog=False)
+    return b, a
+
+def apply_filter(signal, lowcut, highcut, fs, order=4, btype='bandpass'):
+    """
+    Applies a Butterworth filter to the signal.
+    
+    Parameters:
+        signal: The signal to filter.
+        lowcut: Low frequency for the filter (Hz).
+        highcut: High frequency for the filter (Hz).
+        fs: Sample rate (Hz).
+        order: Order of the filter.
+        btype: 'lowpass', 'highpass', 'bandpass', etc.
+    
+    Returns:
+        filtered_signal: The filtered signal.
+    """
+    b, a = butter_filter(lowcut, highcut, fs, order, btype)
+    filtered_signal = filtfilt(b, a, signal)
+    return filtered_signal
+
+def analyze_microphones(recordings_list, fs, lowcut=None, highcut=None):
     """
     Computes cross-correlation lags for each pair of microphones only once,
-    then determines the reference mic based on the sum of lags and computes
-    the time lags relative to that reference mic.
+    applies filters to the signals, and determines the reference mic based on the sum of lags.
     
     Returns:
         reference_mic: The chosen reference microphone.
@@ -16,15 +54,21 @@ def analyze_microphones(recordings_list):
     """
     logging.info("[Trilateration] Analyzing microphones with a single set of cross-correlation computations...")
     n = len(MIC_ORDER)
+    
+    # Apply filters to each signal if lowcut and highcut are provided
+    if lowcut is not None and highcut is not None:
+        filtered_signals = [apply_filter(signal, lowcut, highcut, fs) for signal in recordings_list]
+    else:
+        filtered_signals = recordings_list
+    
     # Store cross-correlation lags for each pair (i, j)
-    # For i < j, we'll compute once and then derive the opposite for j < i.
     correlation_results = {}
     
     # Compute correlation for each unique pair
     for i in range(n):
         for j in range(i + 1, n):
-            ref_signal = recordings_list[i]
-            other_signal = recordings_list[j]
+            ref_signal = filtered_signals[i]
+            other_signal = filtered_signals[j]
             correlation = correlate(ref_signal, other_signal, mode='full')
             lags = np.arange(-len(ref_signal) + 1, len(ref_signal)) / SAMPLE_RATE
             peak_index = np.argmax(np.abs(correlation))
@@ -63,7 +107,6 @@ def analyze_microphones(recordings_list):
         logging.info(f"[Trilateration] Time lag: Ref Mic {reference_mic} vs Mic {mic}: {lag:.6f} s")
     
     return reference_mic, reordered_mics, time_lags
-
 
 def localize_source(time_lags, reordered_mics):
     """
