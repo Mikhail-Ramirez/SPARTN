@@ -9,8 +9,8 @@ import logging
 from config.settings import SAMPLE_RATE, WINDOW_DURATION, CHUNK_DURATION, MIC_ORDER, MIC_POSITIONS
 
 # Import submodules for functionality using relative imports
-from experiments.sensors.audio_recorder import ContinuousRecorder
-from src.processing.trilateration import analyze_microphones, localize_source
+from src.sensors.audio_recorder import ContinuousRecorder
+from experiments.processing.trilateration import analyze_microphones, localize_source
 from src.communications.tower_config import tower_configuration_server
 from src.communications.tablet_comm import send_location, send_classification
 from src.utils.logger import log_measurement
