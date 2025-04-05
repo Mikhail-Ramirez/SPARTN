@@ -64,8 +64,9 @@ def main():
             reference_mic, reordered_mics, time_lags = analyze_microphones(recordings_list)
             # Maintain loop rate based on CHUNK_DURATION
             elapsed = time.time() - loop_start
-            sleep_time = max(0, CHUNK_DURATION - elapsed)
-            time.sleep(sleep_time)
+            # NOTE: DO WE NEED SLEEP???
+            #sleep_time = max(0, CHUNK_DURATION - elapsed)
+            #time.sleep(sleep_time)
 
     except KeyboardInterrupt:
         logging.info("Main loop terminated by user.")
