@@ -57,18 +57,6 @@ def main():
                 time.sleep(CHUNK_DURATION)
                 continue
 
-            # Determine the reference microphone using cross-correlation
-            #reference_mic, reordered_mics, time_lags = analyze_microphones(recordings_list)
-
-            # Reorder recordings to match the mic order determined above
-           # recordings_ordered = [recordings_list[MIC_ORDER.index(mic)] for mic in reordered_mics]
-            # Calculate time lags between the reference and other microphones
-            #time_lags = cross_correlate(recordings_ordered, reordered_mics)
-            # Estimate the source location via trilateration
-            #estimated_position, r1, r2 = localize_source(time_lags, reordered_mics)
-
-            #if estimated_position[0] is not None:
-            #    send_location(estimated_position[0], estimated_position[1])
             # DEBUG FOR SENDING
             estimated_position, r1, r2 = get_loudest(recordings_list) , 0, 0
             reference_mic, reordered_mics = None, None
