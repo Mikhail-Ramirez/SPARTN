@@ -3,6 +3,37 @@ import logging
 from scipy.signal import correlate
 from config.settings import *
 
+
+def get_loudest(recordings_list):
+    """
+    Returns the index of the microphone that recorded the loudest signal.
+    
+    Loudness is determined by the maximum absolute amplitude in the recording.
+    
+    Args:
+        recordings_list (list of np.ndarray): List containing the audio recordings from each microphone.
+    
+    Returns:
+        int: Index of the microphone with the highest peak amplitude.
+    """
+    import numpy as np
+    import logging
+
+    max_amplitude = -1  # Start with -1 to ensure any valid amplitude is higher
+    loudest_index = -1
+
+    for i, recording in enumerate(recordings_list):
+        # Compute the maximum absolute amplitude of the current recording
+        current_max = np.max(np.abs(recording))
+        logging.info(f"[Audio Analysis] Mic index {i}: max amplitude = {current_max:.6f}")
+        
+        if current_max > max_amplitude:
+            max_amplitude = current_max
+            loudest_index = i
+
+    logging.info(f"[Audio Analysis] Loudest mic index: {loudest_index} with amplitude: {max_amplitude:.6f}")
+    return loudest_index
+
 def analyze_microphones(recordings_list):
     """
     Computes cross-correlation lags for each pair of microphones only once,
