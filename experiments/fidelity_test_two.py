@@ -27,7 +27,7 @@ def main():
 
     # Step 1: Configure tower settings via a TCP connection with the tablet.
     # This call blocks until the tower configuration (handshake + coordinate messages) is complete.
-    tower_configuration_server()
+    # tower_configuration_server()
 
     # Step 6: After configuration, enter the main loop for continuous audio processing.
     # (For now, the main loop is provided as a placeholder; adapt as needed.)
@@ -62,34 +62,6 @@ def main():
 
             # Determine the reference microphone using cross-correlation
             reference_mic, reordered_mics, time_lags = analyze_microphones(recordings_list)
-
-            # Reorder recordings to match the mic order determined above
-           # recordings_ordered = [recordings_list[MIC_ORDER.index(mic)] for mic in reordered_mics]
-            # Calculate time lags between the reference and other microphones
-            #time_lags = cross_correlate(recordings_ordered, reordered_mics)
-            # Estimate the source location via trilateration
-            estimated_position, r1, r2 = localize_source(time_lags, reordered_mics)
-
-            #if estimated_position[0] is not None:
-            #    send_location(estimated_position[0], estimated_position[1])
-            # DEBUG FOR SENDING
-            estimated_position, r1, r2 = 0, 0, 0
-            send_location(1, 1)
-
-            # Log the measurement to file with a timestamp
-            timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-            log_measurement(timestamp, reference_mic, reordered_mics, estimated_position, r1, r2)
-            
-            # Optional: Extract a 1-second audio sample and classify it using the AI system.
-            #classification_result = classify_audio_sample(recordings_ordered[0])
-            classification_result = "DummyDrone" 
-
-            logging.info(f"AI Classification Result: {classification_result}")
-            send_classification(classification_result)
-            
-            # Optional: Start or process RF data if needed (this could be running on a separate thread)
-            # start_rf_listener()
-            
             # Maintain loop rate based on CHUNK_DURATION
             elapsed = time.time() - loop_start
             sleep_time = max(0, CHUNK_DURATION - elapsed)
