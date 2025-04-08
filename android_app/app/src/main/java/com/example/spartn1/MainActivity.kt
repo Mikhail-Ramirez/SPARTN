@@ -78,6 +78,9 @@ fun MySplitScreen() {
     // Live predicted coordinate from the Pi
     val liveCoord = remember { mutableStateOf(0f to 0f) }
 
+    // Live estimated quadrant from the Pi
+    val liveQuadrant = remember { mutableStateOf(-1)}   // default -1, means no quadrant
+
     // State for each tower’s mic connection (ALSA connection status).
     val tower2Connected = remember { mutableStateOf(false) }
     val tower3Connected = remember { mutableStateOf(false) }
@@ -112,6 +115,9 @@ fun MySplitScreen() {
                         3 -> tower4Connected.value = true
                         else -> { /* ignore unknown mic indices */ }
                     }
+                },
+                onQuadrant = { quadrant ->
+                    liveQuadrant.value = quadrant
                 }
             )
         }
@@ -205,6 +211,31 @@ fun MySplitScreen() {
                         ) {
                             Text(text = classificationText.value, style = MaterialTheme.typography.subtitle1)
                         }
+
+                        // Highlight the estimated quadrant that the drone is in
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .then(
+                                    when (currentQuadrant.value) {
+                                        0 -> Modifier
+                                            .align(Alignment.TopEnd)  // Top right quadrant
+                                            .background(Color.Red.copy(alpha = 0.5f))  // Highlight in red
+                                        1 -> Modifier
+                                            .align(Alignment.TopStart)  // Top left quadrant
+                                            .background(Color.Red.copy(alpha = 0.5f))  // Highlight in red
+                                        2 -> Modifier
+                                            .align(Alignment.BottomStart)  // Bottom left quadrant
+                                            .background(Color.Red.copy(alpha = 0.5f))  // Highlight in red
+                                        3 -> Modifier
+                                            .align(Alignment.BottomEnd)  // Bottom right quadrant
+                                            .background(Color.Red.copy(alpha = 0.5f))  // Highlight in red
+                                        else -> Modifier // No quadrant highlighted
+                                    }
+                                )
+                                .padding(16.dp)  // Optional: Adjust padding for better visual experience
+                        )
+
                         TowerPlane(
                             coords = listOf(
                                 (x1.value.text.toFloatOrNull() ?: 0f) to (y1.value.text.toFloatOrNull() ?: 0f),
@@ -409,17 +440,17 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>) 
             )
 
             // Draw towers
-            coords.forEach { (xVal, yVal) ->
-                val finalX = xVal * scaleFactor
-                val finalY = yVal * scaleFactor
-                val topLeft = Offset(finalX - halfW, finalY - halfH)
-                drawImage(
-                    image = towerBitmap,
-                    srcSize = IntSize(towerBitmap.width, towerBitmap.height),
-                    dstSize = IntSize(towerW, towerH),
-                    dstOffset = IntOffset(topLeft.x.toInt(), topLeft.y.toInt())
-                )
-            }
+//            coords.forEach { (xVal, yVal) ->
+//                val finalX = xVal * scaleFactor
+//                val finalY = yVal * scaleFactor
+//                val topLeft = Offset(finalX - halfW, finalY - halfH)
+//                drawImage(
+//                    image = towerBitmap,
+//                    srcSize = IntSize(towerBitmap.width, towerBitmap.height),
+//                    dstSize = IntSize(towerW, towerH),
+//                    dstOffset = IntOffset(topLeft.x.toInt(), topLeft.y.toInt())
+//                )
+//            }
             // Draw the live position as a red dot.
             val (lx, ly) = liveCoord
             drawCircle(
@@ -465,6 +496,7 @@ fun startTcpServerForever(
     onCoord: (Float, Float) -> Unit,
     onMicConnected: (Int) -> Unit,
     OnClassifcation: (String) -> Unit
+    onQuadrant: (Int) -> Unit
 ) {
     println("Starting TCP server on port $port for live updates and mic connection messages...")
     var server: ServerSocket? = null
@@ -499,11 +531,19 @@ fun startTcpServerForever(
                     if (line.startsWith("location")) {
                         // Otherwise, treat as live coordinate update.
                         val parts = line.split(",")
-                        if (parts.size >= 2) {
+                        if (parts.size >= 2) {  // Shouldn't this be >=3 ??
                             val x = parts[1].toFloatOrNull() ?: 0f
                             val y = parts[2].toFloatOrNull() ?: 0f
                             onCoord(x, y)
                         }
+                    }
+                    if (line.startsWith("quadrant")) {
+                        // Treat as quadrant information
+                        val parts = line.split(",")
+                        if (parts.size == 2) {
+                            val quadrant = parts[1].toInt()
+                        }
+
                     }
                 }
                 println("Client disconnected.")
