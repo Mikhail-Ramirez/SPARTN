@@ -21,6 +21,24 @@ def send_location(x, y):
     except Exception as e:
         logging.info(f"[Send] Error sending location: {e}")
 
+def send_quadrant(q):
+    """
+    Opens a TCP connection to the tablet (TABLET_IP) on port 39439 to send the estimated quadrant
+    """
+    global TABLET_IP
+    if TABLET_IP is None: 
+        logging.info("[Send] Tablet IP not configured; cannot send location.") 
+        return 
+    try: 
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+        sock.connect((TABLET_IP, 39439))
+        message = f"quadrant,{q}\n"
+        sock.sendall(message.encode())
+        sock.close()
+        logging.info(f"[Send] Sent quadrant: {message.strip()}")
+    except Exception as e:
+        logging.info(f"[Send] Error sending quadrant: {e}")
+
 
 def send_classification(result):
     """
