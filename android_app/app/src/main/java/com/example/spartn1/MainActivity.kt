@@ -217,7 +217,7 @@ fun MySplitScreen() {
                             modifier = Modifier
                                 .fillMaxSize()
                                 .then(
-                                    when (currentQuadrant.value) {
+                                    when (liveQuadrant.value) {
                                         0 -> Modifier
                                             .align(Alignment.TopEnd)  // Top right quadrant
                                             .background(Color.Red.copy(alpha = 0.5f))  // Highlight in red
@@ -495,7 +495,7 @@ fun startTcpServerForever(
     port: Int,
     onCoord: (Float, Float) -> Unit,
     onMicConnected: (Int) -> Unit,
-    OnClassifcation: (String) -> Unit
+    OnClassifcation: (String) -> Unit,
     onQuadrant: (Int) -> Unit
 ) {
     println("Starting TCP server on port $port for live updates and mic connection messages...")
@@ -542,6 +542,7 @@ fun startTcpServerForever(
                         val parts = line.split(",")
                         if (parts.size == 2) {
                             val quadrant = parts[1].toInt()
+                            onQuadrant(quadrant)
                         }
 
                     }
