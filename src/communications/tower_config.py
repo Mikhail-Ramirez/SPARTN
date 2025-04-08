@@ -3,8 +3,9 @@ import socket
 import logging
 import time
 import numpy as np
+from config.settings import TOWER_CONFIG_PORT, MIC_ORDER, TABLET_IP, MIC_POSITIONS  # Ensure these are defined
 
-from config.settings import TOWER_CONFIG_PORT, MIC_ORDER, TABLET_IP, MIC_POSITIONS  # Ensure these are defined in your settings
+from encryption import perform_handshake_receive, encrypt_message, decrypt_message
 
 def configuration_complete():
     complete = all(
@@ -12,15 +13,19 @@ def configuration_complete():
     )
     return complete
 
-
 def process_connection(conn):
-    """Process messages from one configuration connection."""
+    """Process messages from one configuration connection with RSA/AES handshake."""
     global TABLET_IP
     try:
-        data = conn.recv(1024)
+        # Perform handshake as receiver (tablet is sender)
+        perform_handshake_receive(conn)
+        # Now receive the encrypted configuration messages.
+        data = conn.recv(4096)
         if not data:
             return
-        lines = data.decode().strip().splitlines()
+        # Decrypt the received message (expected to be plaintext CSV lines originally)
+        decrypted_data = decrypt_message(data)
+        lines = decrypted_data.strip().splitlines()
         for line in lines:
             # Look for the initial handshake message.
             if line.startswith("configHandshake"):
@@ -28,9 +33,10 @@ def process_connection(conn):
                 if len(parts) >= 2:
                     TABLET_IP = parts[1]
                     logging.info(f"[Tower Config] Received config handshake from {TABLET_IP}")
-                    # Immediately send the mic indexes to the tablet.
+                    # Immediately send the mic indexes to the tablet (encrypted).
                     mic_indexes_str = ','.join(str(m) for m in MIC_ORDER)
-                    conn.sendall((mic_indexes_str + "\n").encode())
+                    response = encrypt_message(mic_indexes_str + "\n")
+                    conn.sendall(response)
                     logging.info(f"[Tower Config] Sent mic indexes: {mic_indexes_str}")
             # Process "sendLocation" messages which update a specific tower’s coordinate.
             elif line.startswith("sendLocation"):
@@ -69,20 +75,14 @@ def process_connection(conn):
 def tower_configuration_server():
     """
     Wait for the tablet’s configuration messages until all towers have been configured.
-    The server will:
-       1. Accept a connection.
-       2. Process a config handshake (if not already done) and send the mic indexes.
-       3. Process any coordinate updates (both initial "micIndex,x,y" and "sendLocation" messages).
-       4. Close the connection and re-open a new listening socket if configuration is still incomplete.
+    The server accepts a connection, performs a handshake, then processes encrypted messages.
     """
     global MIC_POSITIONS
     logging.info(f"[Tower Config] Starting tower configuration server on port {TOWER_CONFIG_PORT}...")
 
-    # Loop until configuration is complete.
     while not configuration_complete():
         try:
             server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            # Allow immediate reuse of the port
             server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             server.bind(('', TOWER_CONFIG_PORT))
             server.listen(1)
@@ -101,3 +101,4 @@ def tower_configuration_server():
     logging.info("[Tower Config] Tower configuration complete. MIC_POSITIONS updated:")
     for mic in MIC_ORDER:
         logging.info(f"   Mic {mic}: {MIC_POSITIONS[mic]}")
+
