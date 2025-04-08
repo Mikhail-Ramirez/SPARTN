@@ -58,19 +58,21 @@ def main():
                 continue
 
             # DEBUG FOR SENDING
-            estimated_position, r1, r2 = get_loudest(recordings_list) , 0, 0
-            reference_mic, reordered_mics = None, None
-            if estimated_position == 0:
-                send_location(5, 5)
-            elif estimated_position == 1:
-                send_location(-3, -3)
-            elif estimated_position == 2:
-                send_location(5, -5)
+            # estimated_position, r1, r2 = get_loudest(recordings_list) , 0, 0
+            # reference_mic, reordered_mics = None, None
+            # if estimated_position == 0:
+            #     send_location(5, 5)
+            # elif estimated_position == 1:
+            #     send_location(-3, -3)
+            # elif estimated_position == 2:
+            #     send_location(5, -5)
 
             # Send the index of the loudest mic as the loudest quadrant identifier
             estimated_quadrant = get_loudest(recordings_list)
             send_quadrant(estimated_quadrant)  
-            reference_mic, reordered_mics = estimated_quadrant, None, None  # Leave for now, change code below eventually... 
+            # Leave for now, change code below eventually... 
+            estimated_position, r1, r2 = get_loudest(recordings_list) , 0, 0
+            reference_mic, reordered_mics = None, None  
 
             # Log the measurement to file with a timestamp
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
