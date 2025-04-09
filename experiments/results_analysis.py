@@ -93,13 +93,6 @@ def generate_summary_text(summary, total_iterations):
         lines.append(f"      Standard Deviation: {std:.6f} s\n")
         lines.append(f"      Iterations Sampled: {nsamples}\n")
     
-    lines.append("\nInterpretation and Context:\n")
-    lines.append("  The average lag for each microphone represents the mean time delay from that mic to all other mics.\n")
-    lines.append("  A lower average lag suggests that the mic is more in sync with its counterparts, potentially due to fewer internal OS delays.\n")
-    lines.append("  The standard deviation indicates the consistency of this delay measurement. A higher value points to greater jitter or inconsistency in OS scheduling.\n")
-    lines.append("\n  In essence, these metrics reveal how each mic's timing performance compares across multiple iterations, giving insights into inherent system perturbations.\n")
-    lines.append("  The numbers don’t lie—if one mic is lagging, it’s time to call it out!\n")
-    
     return "\n".join(lines)
 
 def main():
