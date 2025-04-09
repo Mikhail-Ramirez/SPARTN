@@ -17,7 +17,7 @@ mic1 = np.array([0, 1])
 mic2 = np.array([0, 0])
 mic3 = np.array([1, 0])
 # Perturbation in seconds (±)
-delta_t = 0.000598
+delta_t = 0.019002
 
 # -------------------------------
 # Nonlinear Trilateration Function
@@ -143,8 +143,8 @@ ax2.legend()
 
 plt.suptitle("Trilateration Accuracy & Confidence Circles\n(±{:.6f} s Perturbation per Mic)".format(delta_t), fontsize=14)
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
-plt.savefig('1m_trilateration_accuracy.png', dpi=300)
-print("Plot saved as '1m_trilateration_accuracy.png'.")
+plt.savefig('new_accuracy.png', dpi=300)
+print("Plot saved '.")
 
 # -------------------------------
 # Write Summary Error Metrics to a Text File
