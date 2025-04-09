@@ -35,6 +35,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.Serializable
 import java.net.*
+import androidx.compose.ui.geometry.Size
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,7 +80,7 @@ fun MySplitScreen() {
     val liveCoord = remember { mutableStateOf(0f to 0f) }
 
     // Live estimated quadrant from the Pi
-    val liveQuadrant = remember { mutableStateOf(-1)}   // default -1, means no quadrant
+    val liveQuadrant = remember { mutableIntStateOf(0)}
 
     // State for each tower’s mic connection (ALSA connection status).
     val tower2Connected = remember { mutableStateOf(false) }
@@ -212,29 +213,8 @@ fun MySplitScreen() {
                             Text(text = classificationText.value, style = MaterialTheme.typography.subtitle1)
                         }
 
-                        // Highlight the estimated quadrant that the drone is in
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .then(
-                                    when (liveQuadrant.value) {
-                                        0 -> Modifier
-                                            .align(Alignment.TopEnd)  // Top right quadrant
-                                            .background(Color.Red.copy(alpha = 0.5f))  // Highlight in red
-                                        1 -> Modifier
-                                            .align(Alignment.TopStart)  // Top left quadrant
-                                            .background(Color.Red.copy(alpha = 0.5f))  // Highlight in red
-                                        2 -> Modifier
-                                            .align(Alignment.BottomStart)  // Bottom left quadrant
-                                            .background(Color.Red.copy(alpha = 0.5f))  // Highlight in red
-                                        3 -> Modifier
-                                            .align(Alignment.BottomEnd)  // Bottom right quadrant
-                                            .background(Color.Red.copy(alpha = 0.5f))  // Highlight in red
-                                        else -> Modifier // No quadrant highlighted
-                                    }
-                                )
-                                .padding(16.dp)  // Optional: Adjust padding for better visual experience
-                        )
+                        // Call the QuadrantUpdate composable
+                        QuadrantUpdate(liveQuadrant = liveQuadrant.value)
 
                         TowerPlane(
                             coords = listOf(
@@ -267,6 +247,37 @@ fun MySplitScreen() {
         )
     }
 }
+
+@Composable
+fun QuadrantUpdate(liveQuadrant: Int) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val w = size.width
+        val h = size.height
+
+        // Draw axes
+        drawLine(
+            color = Color.Black,
+            start = Offset(0f, h / 2f),
+            end = Offset(w, h / 2f),
+            strokeWidth = 3f
+        )
+        drawLine(
+            color = Color.Black,
+            start = Offset(w / 2f, 0f),
+            end = Offset(w / 2f, h),
+            strokeWidth = 3f
+        )
+
+        // Draw and highlight the current quadrant based on liveQuadrant value
+        when (liveQuadrant) {
+            0 -> drawRect(color = Color.Red, topLeft = Offset(w / 2f, 0f), size = Size(w / 2f, h / 2f))
+            1 -> drawRect(color = Color.Red, topLeft = Offset(0f, 0f), size = Size(w / 2f, h / 2f))
+            2 -> drawRect(color = Color.Red, topLeft = Offset(0f, h / 2f), size = Size(w / 2f, h / 2f))
+            3 -> drawRect(color = Color.Red, topLeft = Offset(w / 2f, h / 2f), size = Size(w / 2f, h / 2f))
+        }
+    }
+}
+
 
 /**
  * A composable row that displays a coordinate row with an adjacent on/off switch (read-only)
