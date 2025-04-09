@@ -215,9 +215,10 @@ fun MySplitScreen() {
 
                         TowerPlane(
                             coords = listOf(
-                                (x1.value.text.toFloatOrNull() ?: 0f) to (y1.value.text.toFloatOrNull() ?: 0f),
-                                (x2.value.text.toFloatOrNull() ?: 0f) to (y2.value.text.toFloatOrNull() ?: 0f),
-                                (x3.value.text.toFloatOrNull() ?: 0f) to (y3.value.text.toFloatOrNull() ?: 0f)
+                                5f to -5f,    // Tower 1 (top-right)
+                                -5f to -5f,   // Tower 2 (top-left)
+                                -5f to 5f,    // Tower 3 (bottom-left)
+                                5f to 5f      // Tower 4 (bottom-right)
                             ),
                             liveCoord = liveCoord.value,
                             liveQuadrant = liveQuadrant.value
@@ -429,17 +430,17 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>, 
             )
 
             // Draw towers
-//            coords.forEach { (xVal, yVal) ->
-//                val finalX = xVal * scaleFactor
-//                val finalY = yVal * scaleFactor
-//                val topLeft = Offset(finalX - halfW, finalY - halfH)
-//                drawImage(
-//                    image = towerBitmap,
-//                    srcSize = IntSize(towerBitmap.width, towerBitmap.height),
-//                    dstSize = IntSize(towerW, towerH),
-//                    dstOffset = IntOffset(topLeft.x.toInt(), topLeft.y.toInt())
-//                )
-//            }
+            coords.forEach { (xVal, yVal) ->
+                val finalX = xVal * scaleFactor
+                val finalY = yVal * scaleFactor
+                val topLeft = Offset(finalX - halfW, finalY - halfH)
+                drawImage(
+                    image = towerBitmap,
+                    srcSize = IntSize(towerBitmap.width, towerBitmap.height),
+                    dstSize = IntSize(towerW, towerH),
+                    dstOffset = IntOffset(topLeft.x.toInt(), topLeft.y.toInt())
+                )
+            }
             // Draw the live position as a red dot.
 //            val (lx, ly) = liveCoord
 //            drawCircle(
