@@ -42,5 +42,7 @@ def classify_audio_sample(audio_sample):
         return "VistaTech"
     elif output_data[0][1] > output_data[0][0] and output_data[0][1] > output_data[0][2]:
         return "Holy Stone"
-    else:
+    elif output_data[0][2] > output_data[0][0] and output_data[0][2] > output_data[0][1]:
         return "No Drone"
+    else:
+        return "ERROR"
