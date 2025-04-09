@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory
 import android.net.ConnectivityManager
 import android.net.LinkProperties
 import android.net.Network
-import android.net.wifi.WifiManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,18 +31,16 @@ import androidx.compose.ui.unit.IntSize
 import com.example.spartn1.ui.theme.SPARTN1Theme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.io.Serializable
 import java.net.*
-import kotlin.math.roundToInt
-// Add necessary imports at the top:
-import java.net.Socket
+import androidx.compose.ui.geometry.Size
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Force landscape
+        // Force landscape orientation
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         setContent {
@@ -57,8 +54,13 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MySplitScreen() {
     var showBlueScreen by remember { mutableStateOf(false) }
+    // Mutable state for mic indexes received from the Pi (default placeholder)
+    var micIndexes by remember { mutableStateOf("Not configured") }
+    val classificationText = remember { mutableStateOf("No Class.") }
 
-    // Four coordinate pairs
+    // Tower coordinates for each mic.
+    // We assume the order received from the Pi will dictate that:
+    // first coordinate corresponds to mic index from first position, etc.
     val x1 = remember { mutableStateOf(TextFieldValue("0")) }
     val y1 = remember { mutableStateOf(TextFieldValue("0")) }
     val x2 = remember { mutableStateOf(TextFieldValue("0")) }
@@ -74,26 +76,56 @@ fun MySplitScreen() {
         (xs.toFloatOrNull() ?: 0f) to (ys.toFloatOrNull() ?: 0f)
     }
 
-    // Live Pi coordinate
+    // Live predicted coordinate from the Pi
     val liveCoord = remember { mutableStateOf(0f to 0f) }
 
-    // Get IP from connectivity manager
+    // Live estimated quadrant from the Pi
+    val liveQuadrant = remember { mutableIntStateOf(-1)}
+
+    // State for each tower’s mic connection (ALSA connection status).
+    val tower2Connected = remember { mutableStateOf(false) }
+    val tower3Connected = remember { mutableStateOf(false) }
+    val tower4Connected = remember { mutableStateOf(false) }
+
+    // Destination Pi IP – used when sending location updates.
+    val destIp = remember { mutableStateOf(TextFieldValue("10.4.168.69")) }
+
+    // Local IP and port for receiving live coordinate updates and ALSA connection messages.
     val context = LocalContext.current
-    val localIp = remember { findLocalIP(context) } // "0.0.0.0" if none
+    val localIp = remember { findLocalIP(context) }
     val serverPort = 39439
 
-    // Start server
-    val scope = rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
+
+    // Start the TCP server that listens for live (x,y) updates and ALSA connection commands.
     LaunchedEffect(Unit) {
-        scope.launch(Dispatchers.IO) {
-            startTcpServerForever(serverPort) { x, y ->
-                liveCoord.value = x to y
-            }
+        coroutineScope.launch(Dispatchers.IO) {
+            startTcpServerForever(serverPort,
+                OnClassifcation = { classification ->
+                    classificationText.value = classification
+                },
+                onCoord = { x, y ->
+                    liveCoord.value = x to y
+                },
+                onMicConnected = { micIndex ->
+                    // When the Pi sends an ALSA mic connection command,
+                    // update the corresponding switch state.
+                    when (micIndex) {
+                        1 -> tower2Connected.value = true
+                        2 -> tower3Connected.value = true
+                        3 -> tower4Connected.value = true
+                        else -> { /* ignore unknown mic indices */ }
+                    }
+                },
+                onQuadrant = { quadrant ->
+                    liveQuadrant.value = quadrant
+                }
+            )
         }
     }
 
     if (!showBlueScreen) {
-        // GREEN SCREEN
+        // GREEN SCREEN: display current tower coordinates and live location.
         Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
             Column(
                 modifier = Modifier
@@ -106,65 +138,163 @@ fun MySplitScreen() {
                         .fillMaxWidth()
                         .weight(1f)
                 ) {
-                    // Left Pane
+                    // Left Pane: tower configuration and mic indexes
                     Column(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
-                            .padding(16.dp),
+                            .padding(0.dp),
                         verticalArrangement = Arrangement.Top,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Button(
                             onClick = { showBlueScreen = true },
-                            modifier = Modifier.padding(bottom = 16.dp)
+                            modifier = Modifier.padding(bottom = 0.dp)
                         ) {
-                            Text("Switch to Blue Screen")
+                            Text("Switch to Config and Spectrum")
                         }
-
-                        Text("Type (x, y) coords of towers", style = MaterialTheme.typography.h6)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        CoordinateRow("Coord 1", x1, y1)
-                        CoordinateRow("Coord 2", x2, y2)
-                        CoordinateRow("Coord 3", x3, y3)
+                        Text("Tower Coordinates (Mic indexes below):", style = MaterialTheme.typography.subtitle1)
+                        // Display handshake status (simple SETUP handshake indicator)
+                        Text("Setup Handshake: ${if (micIndexes == "Not configured") "Pending" else "Complete"}",
+                            style = MaterialTheme.typography.subtitle1)
+                        // Display the mic indexes as received from the Pi.
+                        Text("Mic Indexes: $micIndexes", style = MaterialTheme.typography.subtitle1)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        // For each tower, show a row with coordinates, a read-only on/off switch, and a send location button.
+                    TowerConfigRow(
+                            label = "Tower 2 (from config)",
+                            xState = x1,
+                            yState = y1,
+                            micConnected = tower2Connected.value,
+                            onSendLocation = {
+                                    coroutineScope.launch(Dispatchers.IO) {
+                                            sendLocationForTower(2, x1.value.text, y1.value.text, destIp.value.text)
+                                        }
+                                }
+                                )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    TowerConfigRow(
+                            label = "Tower 3 (from config)",
+                            xState = x2,
+                            yState = y2,
+                            micConnected = tower3Connected.value,
+                            onSendLocation = {
+                                    coroutineScope.launch(Dispatchers.IO) {
+                                            sendLocationForTower(3, x2.value.text, y2.value.text, destIp.value.text)
+                                        }
+                                }
+                                )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    TowerConfigRow(
+                            label = "Tower 4 (from config)",
+                            xState = x3,
+                            yState = y3,
+                            micConnected = tower4Connected.value,
+                            onSendLocation = {
+                                    coroutineScope.launch(Dispatchers.IO) {
+                                            sendLocationForTower(4, x3.value.text, y3.value.text, destIp.value.text)
+                                        }
+                                }
+                                )
                     }
-
-                    // Right Pane: tower plane
+                    // Right Pane: tower plane with live predicted position.
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxHeight()
                     ) {
-                        TowerPlane(userCoords, liveCoord.value)
+                        Box(
+                                modifier = Modifier
+                                            .align(Alignment.TopCenter)
+                                            .padding(8.dp)
+                                            .background(color = Color.LightGray, shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                                .padding(horizontal = 0.dp, vertical = 0.dp)
+                        ) {
+                            Text(text = classificationText.value, style = MaterialTheme.typography.subtitle1)
+                        }
+
+                        TowerPlane(
+                            coords = listOf(
+                                5f to -5f,    // Tower 1 (top-right)
+                                -5f to -5f,   // Tower 2 (top-left)
+                                -5f to 5f,    // Tower 3 (bottom-left)
+                                5f to 5f      // Tower 4 (bottom-right)
+                            ),
+                            liveCoord = liveCoord.value,
+                            liveQuadrant = liveQuadrant.value
+                        )
                     }
                 }
-
-                // Bottom bar: IP + Port
-                Text(
-                    text = "Listening on $localIp:$serverPort",
+                // Bottom bar: shows the listening info and classification.
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.LightGray)
-                        .padding(8.dp)
-                )
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = "Listening on $localIp:$serverPort", style = MaterialTheme.typography.subtitle1)
+                    Text(text = classificationText.value, style = MaterialTheme.typography.subtitle1)
+                }
             }
         }
     } else {
-        // BLUE SCREEN: Pass the current coordinate inputs for sending
+        // BLUE SCREEN: used for tower configuration.
         BlueScreen(
             onSwitchScreen = { showBlueScreen = false },
-            x1 = x1.value.text,
-            y1 = y1.value.text,
-            x2 = x2.value.text,
-            y2 = y2.value.text,
-            x3 = x3.value.text,
-            y3 = y3.value.text
+            destIpState = remember { mutableStateOf(TextFieldValue("10.4.168.69")) }
         )
     }
 }
 
 /**
- * Row for (X, Y) text fields
+ * A composable row that displays a coordinate row with an adjacent on/off switch (read-only)
+ * and a Send Location button.
+ */
+@Composable
+fun TowerConfigRow(
+    label: String,
+    xState: MutableState<TextFieldValue>,
+    yState: MutableState<TextFieldValue>,
+    micConnected: Boolean,
+    onSendLocation: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = label, style = MaterialTheme.typography.subtitle1)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Mic Connected")
+                Switch(
+                    checked = micConnected,
+                    onCheckedChange = { /* not user controlled */ },
+                    enabled = false
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            CoordinateRow(label = "", xState = xState, yState = yState)
+            Button(
+                onClick = onSendLocation,
+                modifier = Modifier.padding(start = 0.dp)
+            ) {
+                Text("Send Location")
+            }
+        }
+    }
+}
+
+
+/**
+ * Row for (X, Y) text fields.
  */
 @Composable
 fun CoordinateRow(
@@ -174,55 +304,46 @@ fun CoordinateRow(
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = label, style = MaterialTheme.typography.subtitle1)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             TextField(
                 value = xState.value,
                 onValueChange = { xState.value = it },
                 label = { Text("X") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.width(80.dp)
+                modifier = Modifier.width(40.dp)
             )
             TextField(
                 value = yState.value,
                 onValueChange = { yState.value = it },
                 label = { Text("Y") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.width(80.dp)
+                modifier = Modifier.width(40.dp)
             )
         }
     }
 }
 
 /**
- * Blue screen composable.
- * Now includes:
- * - A button to switch back to the green screen.
- * - An input field to specify the destination IP.
- * - Three buttons labeled "Update location 1", "Update location 2", "Update location 3".
- *   Each sends the corresponding x,y values from the green screen.
+ * Blue screen composable for tower configuration.
+ * Includes a new "Configure Towers" button that connects to the Pi on port 39440.
+ * It receives the mic indexes and then sends the tower coordinates (one for each mic) using the format "micIndex,x,y".
  */
 @Composable
 fun BlueScreen(
     onSwitchScreen: () -> Unit,
-    x1: String,
-    y1: String,
-    x2: String,
-    y2: String,
-    x3: String,
-    y3: String
+    destIpState: MutableState<TextFieldValue>
 ) {
     val coroutineScope = rememberCoroutineScope()
-    var destIp by remember { mutableStateOf(TextFieldValue("100.76.15.100")) } // default value
+    val context = LocalContext.current
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Blue)
-            .padding(16.dp),
+            .padding(0.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Button to switch back to the green screen
         Button(
             onClick = { onSwitchScreen() },
             modifier = Modifier.fillMaxWidth()
@@ -230,86 +351,44 @@ fun BlueScreen(
             Text("Switch to Green Screen")
         }
         Spacer(modifier = Modifier.height(16.dp))
-        
-        // Input field for the destination IP address
         TextField(
-            value = destIp,
-            onValueChange = { destIp = it },
-            label = { Text("Destination IP") },
+            value = destIpState.value,
+            onValueChange = { destIpState.value = it },
+            label = { Text("Pi IP for Config (port 39440)") },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
-        
-        // Button to update location 1 using the green screen's x1,y1
         Button(
             onClick = {
                 coroutineScope.launch(Dispatchers.IO) {
-                    try {
-                        val message = "$x1,$y1\n"
-                        Socket(destIp.text, 39439).use { socket ->
-                            socket.getOutputStream().write(message.toByteArray())
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
+                        // Get local IP for config handshake.
+                        val localIp = findLocalIP(context)
+                        // Connect to the Pi's configuration server on port 39440.
+                        val socket = Socket(destIpState.value.text, 39440)
+                        val outStream = socket.getOutputStream()
+                        val msg = "configHandshake,$localIp\n"
+                        outStream.write(msg.toByteArray())
+                        // Optionally, read the acknowledgement.
+                        val reader = BufferedReader(InputStreamReader(socket.getInputStream()))
+                        val ack = reader.readLine()
+                        println("Config Handshake Ack: $ack")
+                        socket.close()
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Update location 1")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        // Button to update location 2 using x2,y2
-        Button(
-            onClick = {
-                coroutineScope.launch(Dispatchers.IO) {
-                    try {
-                        val message = "$x2,$y2\n"
-                        Socket(destIp.text, 39439).use { socket ->
-                            socket.getOutputStream().write(message.toByteArray())
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Update location 2")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        // Button to update location 3 using x3,y3
-        Button(
-            onClick = {
-                coroutineScope.launch(Dispatchers.IO) {
-                    try {
-                        val message = "$x3,$y3\n"
-                        Socket(destIp.text, 39439).use { socket ->
-                            socket.getOutputStream().write(message.toByteArray())
-                        }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Update location 3")
+            Text("Configure Towers")
         }
     }
 }
 
 /**
- * Draw green plane, show user coords as towers, plus a red dot for liveCoord.
+ * Draws the tower plane. Displays the towers using the provided coordinates and a red dot for liveCoord.
  */
 @Composable
-fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>) {
-    val scaleFactor = 10f
+fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>, liveQuadrant: Int) {
+    val scaleFactor = 10f  // This could be made dynamic based on the input extents.
     val context = LocalContext.current
-
-    // Load tower.png
     val towerBitmap: ImageBitmap = remember {
         val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.tower)
         bmp.asImageBitmap()
@@ -320,12 +399,23 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>) 
     val halfH = towerH / 2
 
     Canvas(modifier = Modifier.fillMaxSize()) {
-        drawRect(color = Color.Green, size = size)
         val w = size.width
         val h = size.height
+        drawRect(color = Color.Green, size = size)
+
+
+        // Highlight quadrant that drone is estimated to be in
+        val quadrantColor = Color.Red
+        when (liveQuadrant) {
+            0 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, 0f), size = Size(w / 2, h / 2)) // Q1
+            1 -> drawRect(color = quadrantColor, topLeft = Offset(0f, 0f), size = Size(w / 2, h / 2))    // Q2
+            2 -> drawRect(color = quadrantColor, topLeft = Offset(0f, h / 2), size = Size(w / 2, h / 2)) // Q3
+            3 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, h / 2), size = Size(w / 2, h / 2)) // Q4
+        }
 
         translate(left = w / 2f, top = h / 2f) {
-            // Axes
+
+            // Draw axes
             drawLine(
                 color = Color.Black,
                 start = Offset(-w/2f, 0f),
@@ -339,7 +429,7 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>) 
                 strokeWidth = 3f
             )
 
-            // Towers
+            // Draw towers
             coords.forEach { (xVal, yVal) ->
                 val finalX = xVal * scaleFactor
                 val finalY = yVal * scaleFactor
@@ -351,23 +441,19 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>) 
                     dstOffset = IntOffset(topLeft.x.toInt(), topLeft.y.toInt())
                 )
             }
-
-            // RPi dot
-            val (lx, ly) = liveCoord
-            val dotX = lx * scaleFactor
-            val dotY = ly * scaleFactor
-            drawCircle(
-                color = Color.Red,
-                radius = 10f,
-                center = Offset(dotX, dotY)
-            )
+            // Draw the live position as a red dot.
+//            val (lx, ly) = liveCoord
+//            drawCircle(
+//                color = Color.Red,
+//                radius = 10f,
+//                center = Offset(lx * scaleFactor, ly * scaleFactor)
+//            )
         }
     }
 }
 
 /**
- * Returns the device's IPv4 address using ConnectivityManager + LinkProperties.
- * If none found, returns "0.0.0.0".
+ * Returns the device's IPv4 address.
  */
 fun findLocalIP(context: android.content.Context): String {
     return try {
@@ -375,7 +461,6 @@ fun findLocalIP(context: android.content.Context): String {
             ?: return "0.0.0.0"
         val network: Network = cm.activeNetwork ?: return "0.0.0.0"
         val lp: LinkProperties = cm.getLinkProperties(network) ?: return "0.0.0.0"
-
         for (la in lp.linkAddresses) {
             val addr = la.address
             if (addr is Inet4Address && !addr.isLoopbackAddress) {
@@ -390,42 +475,96 @@ fun findLocalIP(context: android.content.Context): String {
 }
 
 /**
- * A never-ending TCP server on [port]. Accept client, parse "x,y" lines,
- * pass them to [onCoord]. If the client closes, wait for next client.
+ * A never-ending TCP server that listens on [port] for live (x,y) updates and ALSA mic connection messages.
+ *
+ * Expected messages:
+ *   - For live coordinate updates: "x,y"
+ *   - For ALSA mic connection: "alsaConnected,<micIndex>"
  */
-fun startTcpServerForever(port: Int, onCoord: (Float, Float) -> Unit) {
-    println("startTcpServerForever on port $port")
+fun startTcpServerForever(
+    port: Int,
+    onCoord: (Float, Float) -> Unit,
+    onMicConnected: (Int) -> Unit,
+    OnClassifcation: (String) -> Unit,
+    onQuadrant: (Int) -> Unit
+) {
+    println("Starting TCP server on port $port for live updates and mic connection messages...")
     var server: ServerSocket? = null
     try {
         server = ServerSocket(port)
         while (true) {
             try {
-                println("Waiting for client on port $port...")
+                println("Waiting for client connection on port $port...")
                 val client = server.accept()
                 println("Client connected: ${client.inetAddress?.hostAddress}")
-
                 val reader = BufferedReader(InputStreamReader(client.getInputStream()))
                 while (true) {
                     val line = reader.readLine() ?: break
-                    val parts = line.split(",")
-                    if (parts.size == 2) {
-                        val x = parts[0].toFloatOrNull() ?: 0f
-                        val y = parts[1].toFloatOrNull() ?: 0f
-                        onCoord(x, y)
+                    // Check if this is an ALSA connection message.
+                    if (line.startsWith("alsaConnected")) {
+                        val parts = line.split(",")
+                        if (parts.size >= 2) {
+                            val micIndex = parts[1].toIntOrNull() ?: continue
+                            onMicConnected(micIndex)
+                        }
+                        continue
+                    }
+                    // Check for classification message.
+                    if (line.startsWith("classification")) {
+                        val parts = line.split(",", limit = 2)
+                        if (parts.size >= 2) {
+                            val classification = parts[1]
+                            OnClassifcation(classification)
+                        }
+                        continue
+                    }
+                    if (line.startsWith("location")) {
+                        // Otherwise, treat as live coordinate update.
+                        val parts = line.split(",")
+                        if (parts.size >= 2) {  // Shouldn't this be >=3 ??
+                            val x = parts[1].toFloatOrNull() ?: 0f
+                            val y = parts[2].toFloatOrNull() ?: 0f
+                            onCoord(x, y)
+                        }
+                    }
+                    if (line.startsWith("quadrant")) {
+                        // Treat as quadrant information
+                        val parts = line.split(",")
+                        if (parts.size == 2) {
+                            val quadrant = parts[1].toInt()
+                            onQuadrant(quadrant)
+                        }
+
                     }
                 }
                 println("Client disconnected.")
                 client.close()
             } catch (ex: Exception) {
                 ex.printStackTrace()
-                // keep going for next client
             }
         }
     } catch (ex: Exception) {
         ex.printStackTrace()
     } finally {
-        println("Exiting server? - Shouldn’t happen unless app killed.")
+        println("TCP server shutting down.")
         server?.close()
+    }
+}
+
+/**
+ * Helper function to send a location update for a given tower.
+ *
+ * Sends a message of the form "sendLocation,<micIndex>,<x>,<y>\n" to the Pi at [destIp] on port 39440.
+ */
+fun sendLocationForTower(micIndex: Int, x: String, y: String, destIp: String) {
+    try {
+        val socket = Socket(destIp, 39440)
+        val msg = "sendLocation,$micIndex,$x,$y\n"
+        socket.getOutputStream().write(msg.toByteArray())
+        socket.close()
+        println("Sent location for mic $micIndex: ($x, $y)")
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
 

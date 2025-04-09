@@ -6,16 +6,17 @@ from datetime import datetime
 SAMPLE_RATE = 48000
 WINDOW_DURATION = 1.0
 CHUNK_DURATION = 0.1
-MIC_ORDER = [2, 3, 4]
+MIC_ORDER = [2, 3, 4, 5]   # 4th ALSA index: 5 
 
 CHANNELS = 1               # Mono recording
 SPEED_OF_SOUND = 343         # m/s
 
 # Microphone positions (ALSA card numbers → Physical positions)
 MIC_POSITIONS = {
-    2: np.array([None, None]),            # Mic 4
-    3: np.array([None, None]),   # Mic 2
-    4: np.array([None, None])         # Mic 3
+    2: np.array([0, 0]), # Mic2 
+    3: np.array([0, 0]), # Mic3
+    4: np.array([0, 0]), # Mic4
+    5: np.array([0, 0])  # Mic5     Should be the 4th mic ALSA value 
 }
 
 # CSV logging file

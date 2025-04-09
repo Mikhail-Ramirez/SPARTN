@@ -3,52 +3,12 @@ import logging
 from scipy.signal import correlate
 from config.settings import *
 
-
-def get_loudest(recordings_list):
-    """
-    Returns the index of the microphone that recorded the loudest signal.
-    
-    Loudness is determined by the maximum absolute amplitude in the recording.
-    
-    Args:
-        recordings_list (list of np.ndarray): List containing the audio recordings from each microphone.
-    
-    Returns:
-        int: Index of the microphone with the highest peak amplitude.
-    """
-    import numpy as np
-    import logging
-
-    max_amplitude = -1  # Start with -1 to ensure any valid amplitude is higher
-    loudest_index = -1
-
-    for i, recording in enumerate(recordings_list):
-        # Compute the maximum absolute amplitude of the current recording
-        current_max = np.max(np.abs(recording))
-        logging.info(f"[Audio Analysis] Mic index {i}: max amplitude = {current_max:.6f}")
-        
-        if current_max > max_amplitude:
-            max_amplitude = current_max
-            loudest_index = i
-
-    logging.info(f"[Audio Analysis] Loudest mic index: {loudest_index} with amplitude: {max_amplitude:.6f}")
-    return loudest_index
-
 def analyze_microphones(recordings_list):
     """
-    Computes cross-correlation lags for each pair of microphones only once,
-    then determines the reference mic based on the sum of lags and computes
-    the time lags relative to that reference mic.
-    
-    Returns:
-        reference_mic: The chosen reference microphone.
-        reordered_mics: List of mics with the reference mic first.
-        time_lags: Dictionary mapping each non-reference mic to its time lag.
+    IMPROVISED FUNCTION FOR TESTING PURPOSES ONLY
     """
-    logging.info("[Trilateration] Analyzing microphones with a single set of cross-correlation computations...")
     n = len(MIC_ORDER)
     # Store cross-correlation lags for each pair (i, j)
-    # For i < j, we'll compute once and then derive the opposite for j < i.
     correlation_results = {}
     
     # Compute correlation for each unique pair
@@ -64,8 +24,8 @@ def analyze_microphones(recordings_list):
             correlation_results[(i, j)] = lag
             # For the opposite pair, the lag is the negative
             correlation_results[(j, i)] = -lag
-            logging.info(f"[Trilateration] Cross-correlation: Mic {MIC_ORDER[i]} vs Mic {MIC_ORDER[j]}: lag = {lag:.6f} s")
     
+    logging.info(f"[RESULT] {correlation_results}")
     # Determine a score for each mic by summing its lags with every other mic.
     scores = {}
     for i in range(n):
@@ -75,13 +35,14 @@ def analyze_microphones(recordings_list):
                 continue
             score += correlation_results[(i, j)]
         scores[MIC_ORDER[i]] = score
-        logging.info(f"[Trilateration] Total score for Mic {MIC_ORDER[i]}: {score:.6f} s")
+        #logging.info(f"[TESTING] Total score for Mic {MIC_ORDER[i]}: {score:.6f} s")
     
     # Choose the reference mic with the highest score.
     reference_mic = max(scores, key=scores.get)
-    logging.info(f"[Trilateration] Reference mic chosen: Mic {reference_mic}")
+    logging.info(f"[TESTING] Reference mic chosen: Mic {reference_mic}")
     reordered_mics = [reference_mic] + [m for m in MIC_ORDER if m != reference_mic]
     
+    '''
     # Compute time lags relative to the reference mic using the stored correlations.
     ref_index = MIC_ORDER.index(reference_mic)
     time_lags = {}
@@ -91,9 +52,10 @@ def analyze_microphones(recordings_list):
         mic = MIC_ORDER[i]
         lag = correlation_results[(ref_index, i)]
         time_lags[mic] = lag
-        logging.info(f"[Trilateration] Time lag: Ref Mic {reference_mic} vs Mic {mic}: {lag:.6f} s")
-    
-    return reference_mic, reordered_mics, time_lags
+        #logging.info(f"[TESTING] Time lag: Ref Mic {reference_mic} vs Mic {mic}: {lag:.6f} s")
+    '''
+    return reference_mic, reordered_mics, None 
+    #return reference_mic, reordered_mics, time_lags 
 
 
 def localize_source(time_lags, reordered_mics):

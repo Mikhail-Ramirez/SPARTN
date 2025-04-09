@@ -1,0 +1,43 @@
+SPARTN Pi System OS Lag Analysis Report
+
+Total iterations analyzed: 69
+
+Microphone Average Lag Metrics:
+
+  - Microphone 0:
+
+      Average Lag       : -0.010681 s
+
+      Standard Deviation: 0.046757 s
+
+      Iterations Sampled: 69
+
+  - Microphone 1:
+
+      Average Lag       : 0.003117 s
+
+      Standard Deviation: 0.025269 s
+
+      Iterations Sampled: 69
+
+  - Microphone 2:
+
+      Average Lag       : 0.007564 s
+
+      Standard Deviation: 0.050952 s
+
+      Iterations Sampled: 69
+
+
+Interpretation and Context:
+
+  The average lag for each microphone represents the mean time delay from that mic to all other mics.
+
+  A lower average lag suggests that the mic is more in sync with its counterparts, potentially due to fewer internal OS delays.
+
+  The standard deviation indicates the consistency of this delay measurement. A higher value points to greater jitter or inconsistency in OS scheduling.
+
+
+  In essence, these metrics reveal how each mic's timing performance compares across multiple iterations, giving insights into inherent system perturbations.
+
+  The numbers don’t lie—if one mic is lagging, it’s time to call it out!
