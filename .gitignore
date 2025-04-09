@@ -16,6 +16,7 @@ local.properties
 *.opendb
 *.csv
 env/*
+env/
 *.log
 */__pycache__/*
 .idea/*
