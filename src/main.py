@@ -39,6 +39,7 @@ def main():
 
     try:
         while True:
+            prev_time = time.time()
             # This is a checker that will not let any processing happen if the positions have not been set or sent to the configs
             if any(pos[0] is None or pos[1] is None for pos in MIC_POSITIONS.values()):
                     logging.info("[INFO] - Mic positions not yet fully defined. Waiting...")
@@ -89,9 +90,10 @@ def main():
             # start_rf_listener()
             
             # Maintain loop rate based on CHUNK_DURATION
-            elapsed = time.time() - loop_start
-            sleep_time = max(0, CHUNK_DURATION - elapsed)
-            time.sleep(sleep_time)
+            #elapsed = time.time() - loop_start
+            # sleep_time = max(0, CHUNK_DURATION - elapsed)
+            # time.sleep(sleep_time)
+            print(f"{time.time() - prev_time}")
 
     except KeyboardInterrupt:
         logging.info("Main loop terminated by user.")
