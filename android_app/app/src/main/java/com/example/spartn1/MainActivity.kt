@@ -80,7 +80,7 @@ fun MySplitScreen() {
     val liveCoord = remember { mutableStateOf(0f to 0f) }
 
     // Live estimated quadrant from the Pi
-    val liveQuadrant = remember { mutableIntStateOf(0)}
+    val liveQuadrant = remember { mutableIntStateOf(-1)}
 
     // State for each tower’s mic connection (ALSA connection status).
     val tower2Connected = remember { mutableStateOf(false) }
@@ -213,16 +213,14 @@ fun MySplitScreen() {
                             Text(text = classificationText.value, style = MaterialTheme.typography.subtitle1)
                         }
 
-                        // Call the QuadrantUpdate composable
-                        QuadrantUpdate(liveQuadrant = liveQuadrant.value)
-
                         TowerPlane(
                             coords = listOf(
                                 (x1.value.text.toFloatOrNull() ?: 0f) to (y1.value.text.toFloatOrNull() ?: 0f),
                                 (x2.value.text.toFloatOrNull() ?: 0f) to (y2.value.text.toFloatOrNull() ?: 0f),
                                 (x3.value.text.toFloatOrNull() ?: 0f) to (y3.value.text.toFloatOrNull() ?: 0f)
                             ),
-                            liveCoord = liveCoord.value
+                            liveCoord = liveCoord.value,
+                            liveQuadrant = liveQuadrant.value
                         )
                     }
                 }
@@ -247,37 +245,6 @@ fun MySplitScreen() {
         )
     }
 }
-
-@Composable
-fun QuadrantUpdate(liveQuadrant: Int) {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val w = size.width
-        val h = size.height
-
-        // Draw axes
-        drawLine(
-            color = Color.Black,
-            start = Offset(0f, h / 2f),
-            end = Offset(w, h / 2f),
-            strokeWidth = 3f
-        )
-        drawLine(
-            color = Color.Black,
-            start = Offset(w / 2f, 0f),
-            end = Offset(w / 2f, h),
-            strokeWidth = 3f
-        )
-
-        // Draw and highlight the current quadrant based on liveQuadrant value
-        when (liveQuadrant) {
-            0 -> drawRect(color = Color.Red, topLeft = Offset(w / 2f, 0f), size = Size(w / 2f, h / 2f))
-            1 -> drawRect(color = Color.Red, topLeft = Offset(0f, 0f), size = Size(w / 2f, h / 2f))
-            2 -> drawRect(color = Color.Red, topLeft = Offset(0f, h / 2f), size = Size(w / 2f, h / 2f))
-            3 -> drawRect(color = Color.Red, topLeft = Offset(w / 2f, h / 2f), size = Size(w / 2f, h / 2f))
-        }
-    }
-}
-
 
 /**
  * A composable row that displays a coordinate row with an adjacent on/off switch (read-only)
@@ -418,7 +385,7 @@ fun BlueScreen(
  * Draws the tower plane. Displays the towers using the provided coordinates and a red dot for liveCoord.
  */
 @Composable
-fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>) {
+fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>, liveQuadrant: Int) {
     val scaleFactor = 10f  // This could be made dynamic based on the input extents.
     val context = LocalContext.current
     val towerBitmap: ImageBitmap = remember {
@@ -431,11 +398,22 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>) 
     val halfH = towerH / 2
 
     Canvas(modifier = Modifier.fillMaxSize()) {
-        drawRect(color = Color.Green, size = size)
         val w = size.width
         val h = size.height
+        drawRect(color = Color.Green, size = size)
+
+
+        // Highlight quadrant that drone is estimated to be in
+        val quadrantColor = Color.Red
+        when (liveQuadrant) {
+            0 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, 0f), size = Size(w / 2, h / 2)) // Q1
+            1 -> drawRect(color = quadrantColor, topLeft = Offset(0f, 0f), size = Size(w / 2, h / 2))    // Q2
+            2 -> drawRect(color = quadrantColor, topLeft = Offset(0f, h / 2), size = Size(w / 2, h / 2)) // Q3
+            3 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, h / 2), size = Size(w / 2, h / 2)) // Q4
+        }
 
         translate(left = w / 2f, top = h / 2f) {
+
             // Draw axes
             drawLine(
                 color = Color.Black,
@@ -463,12 +441,12 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>) 
 //                )
 //            }
             // Draw the live position as a red dot.
-            val (lx, ly) = liveCoord
-            drawCircle(
-                color = Color.Red,
-                radius = 10f,
-                center = Offset(lx * scaleFactor, ly * scaleFactor)
-            )
+//            val (lx, ly) = liveCoord
+//            drawCircle(
+//                color = Color.Red,
+//                radius = 10f,
+//                center = Offset(lx * scaleFactor, ly * scaleFactor)
+//            )
         }
     }
 }
