@@ -11,7 +11,7 @@ from .processing.trilateration import analyze_microphones, localize_source, get_
 from .communications.tower_config import tower_configuration_server
 from .communications.tablet_comm import send_location, send_classification, send_quadrant
 from .utils.logger import log_measurement
-from .processing.ai_classification import classify_audio_sample  # For AI audio analysis
+# from .processing.ai_classification import classify_audio_sample  # For AI audio analysis
 
 # Placeholders for future integration:
 #from .communications.encryption import encrypt_message, decrypt_message  # For secure messaging
