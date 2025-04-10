@@ -4,6 +4,31 @@ from scipy.signal import correlate
 from config.settings import *
 
 
+def get_shift_percentages(recordings_list): 
+    """
+    Returns an ordered list of shift percentage values, calculated from mic amplitudes
+    relative to the scale of possible amplitude levels. 
+    """
+    import numpy as np
+    import logging
+
+    # Scale values, these represent the loudest value and quietest values that we expect 
+    # Need to test to find real values, use this for now 
+    max_amp = 1
+    min_amp = 0.5
+    sum = max_amp + min_amp
+    shift_percent_values = []
+
+    # form the list of ordered mic amplitude shift values 
+    for i, recording in enumerate(recordings_list):
+        amp = np.max(np.abs(recording)) # Current max amplitude of this mic 
+        logging.info(f"[Audio Analysis] Mic index {i}: max amplitude = {amp:.6f}")
+
+        shift = amp / sum   # Represetns the percentage to shift the location towards this mic
+        shift_percent_values[i] = shift
+
+    return shift_percent_values
+
 def get_loudest(recordings_list):
     """
     Returns the index of the microphone that recorded the loudest signal.
