@@ -448,16 +448,26 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>, 
                     dstOffset = IntOffset(topLeft.x.toInt(), topLeft.y.toInt())
                 )
             }
-            // Draw the live position as a red dot.
+            // Draw the live estimated position as a red dot.
+            val maxWidth = 35f
+            val maxHeight = 35f
+            var lx = 0f
+            var ly = 0f
 
+            // Calculate shift towards mic 1
+            ly += liveShiftVals[0] * maxHeight
+            // Calculate shift towards mic 2
+            lx += liveShiftVals[1] * maxWidth
+            // Calculate shift towards mic 3
+            ly += -liveShiftVals[2] * maxHeight
+            // Calculate shift towards mic 4
+            lx += -liveShiftVals[3] * maxWidth
 
-
-//            val (lx, ly) = liveCoord
-//            drawCircle(
-//                color = Color.Red,
-//                radius = 10f,
-//                center = Offset(lx * scaleFactor, ly * scaleFactor)
-//            )
+            drawCircle(
+                color = Color.Red,
+                radius = 10f,
+                center = Offset(lx * scaleFactor, ly * scaleFactor)
+            )
         }
     }
 }
