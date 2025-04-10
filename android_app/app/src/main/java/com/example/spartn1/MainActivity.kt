@@ -82,6 +82,9 @@ fun MySplitScreen() {
     // Live estimated quadrant from the Pi
     val liveQuadrant = remember { mutableIntStateOf(-1)}
 
+    // Live shift values
+    val liveShiftVals = remember { mutableStateOf(listOf(0f, 0f, 0f, 0f)) }
+
     // State for each tower’s mic connection (ALSA connection status).
     val tower2Connected = remember { mutableStateOf(false) }
     val tower3Connected = remember { mutableStateOf(false) }
@@ -119,6 +122,9 @@ fun MySplitScreen() {
                 },
                 onQuadrant = { quadrant ->
                     liveQuadrant.value = quadrant
+                },
+                onShiftVals = {shift_values ->
+                    liveShiftVals.value = shift_values
                 }
             )
         }
@@ -221,7 +227,8 @@ fun MySplitScreen() {
                                 5f to 5f      // Tower 4 (bottom-right)
                             ),
                             liveCoord = liveCoord.value,
-                            liveQuadrant = liveQuadrant.value
+                            liveQuadrant = liveQuadrant.value,
+                            liveShiftVals = liveShiftVals.value
                         )
                     }
                 }
@@ -386,7 +393,7 @@ fun BlueScreen(
  * Draws the tower plane. Displays the towers using the provided coordinates and a red dot for liveCoord.
  */
 @Composable
-fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>, liveQuadrant: Int) {
+fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>, liveQuadrant: Int, liveShiftVals: List<Float>) {
     val scaleFactor = 10f  // This could be made dynamic based on the input extents.
     val context = LocalContext.current
     val towerBitmap: ImageBitmap = remember {
@@ -442,6 +449,9 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>, 
                 )
             }
             // Draw the live position as a red dot.
+
+
+
 //            val (lx, ly) = liveCoord
 //            drawCircle(
 //                color = Color.Red,
@@ -486,7 +496,8 @@ fun startTcpServerForever(
     onCoord: (Float, Float) -> Unit,
     onMicConnected: (Int) -> Unit,
     OnClassifcation: (String) -> Unit,
-    onQuadrant: (Int) -> Unit
+    onQuadrant: (Int) -> Unit,
+    onShiftVals: (List<Float>) -> Unit
 ) {
     println("Starting TCP server on port $port for live updates and mic connection messages...")
     var server: ServerSocket? = null
@@ -535,6 +546,15 @@ fun startTcpServerForever(
                             onQuadrant(quadrant)
                         }
 
+                    }
+                    if (line.startsWith("shift values")) {
+                        // Receive 4 shift values
+                        val parts = line.split(",")
+                        if (parts.size == 5) {
+                            val shift_values = listOf(parts[1].toFloat(), parts[2].toFloat(),
+                                parts[3].toFloat(), parts[4].toFloat())
+                            onShiftVals(shift_values)
+                        }
                     }
                 }
                 println("Client disconnected.")
