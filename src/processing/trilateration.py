@@ -16,7 +16,7 @@ def get_shift_percentages(recordings_list):
     # Need to test to find real values, use this for now 
     max_amp = 1
     min_amp = 0.5
-    sum = max_amp + min_amp
+    diff = max_amp - min_amp
     shift_percent_values = []
 
     # form the list of ordered mic amplitude shift values 
@@ -24,8 +24,13 @@ def get_shift_percentages(recordings_list):
         amp = np.max(np.abs(recording)) # Current max amplitude of this mic 
         logging.info(f"[Audio Analysis] Mic index {i}: max amplitude = {amp:.6f}")
 
-        shift = amp / sum   # Represetns the percentage to shift the location towards this mic
-        shift_percent_values[i] = shift
+        if amp > max_amp:
+            shift = max_amp
+        elif amp < min_amp: 
+            shift = min_amp
+        else: 
+            shift = (amp - min_amp) / diff   # Represetns the percentage to shift the location towards this mic
+            shift_percent_values[i] = shift
 
     return shift_percent_values
 
