@@ -13,7 +13,8 @@ def get_shift_percentages(recordings_list):
     import logging
 
     # Scale values, these represent the loudest value and quietest values that we expect 
-    # Need to test to find real values, use this for now 
+    # Tested the system on 1 mic using this setup, results are decent. Further fine tuning 
+    # the values below: 
     max_amp = 0.9
     min_amp = 0.2
     diff = max_amp - min_amp
