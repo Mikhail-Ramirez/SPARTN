@@ -221,12 +221,11 @@ fun MySplitScreen() {
 
                         TowerPlane(
                             coords = listOf(
-                                5f to -5f,    // Tower 1 (top-right)
-                                -5f to -5f,   // Tower 2 (top-left)
-                                -5f to 5f,    // Tower 3 (bottom-left)
-                                5f to 5f      // Tower 4 (bottom-right)
+                                0f to 35f,     // Tower 1 (top-right)
+                                35f to 0f,     // Tower 2 (top-left)
+                                0f to -35f,    // Tower 3 (bottom-left)
+                                -35f to 0f     // Tower 4 (bottom-right)
                             ),
-                            liveCoord = liveCoord.value,
                             liveQuadrant = liveQuadrant.value,
                             liveShiftVals = liveShiftVals.value
                         )
@@ -393,7 +392,7 @@ fun BlueScreen(
  * Draws the tower plane. Displays the towers using the provided coordinates and a red dot for liveCoord.
  */
 @Composable
-fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>, liveQuadrant: Int, liveShiftVals: List<Float>) {
+fun TowerPlane(coords: List<Pair<Float, Float>>, liveQuadrant: Int, liveShiftVals: List<Float>) {
     val scaleFactor = 10f  // This could be made dynamic based on the input extents.
     val context = LocalContext.current
     val towerBitmap: ImageBitmap = remember {
@@ -412,7 +411,7 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>, 
 
 
         // Highlight quadrant that drone is estimated to be in
-        val quadrantColor = Color.Red
+        val quadrantColor = Color.Yellow
         when (liveQuadrant) {
             0 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, 0f), size = Size(w / 2, h / 2)) // Q1
             1 -> drawRect(color = quadrantColor, topLeft = Offset(0f, 0f), size = Size(w / 2, h / 2))    // Q2
