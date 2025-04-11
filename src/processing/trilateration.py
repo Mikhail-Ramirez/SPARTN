@@ -25,9 +25,9 @@ def get_shift_percentages(recordings_list):
         logging.info(f"[Audio Analysis] Mic index {i}: max amplitude = {amp:.6f}")
 
         if amp > max_amp:
-            shift = max_amp
+            shift = 1.0
         elif amp < min_amp: 
-            shift = min_amp
+            shift = 0.0
         else: 
             shift = (amp - min_amp) / diff   # Represetns the percentage to shift the location towards this mic
             shift_percent_values[i] = shift
