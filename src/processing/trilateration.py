@@ -14,10 +14,10 @@ def get_shift_percentages(recordings_list):
 
     # Scale values, these represent the loudest value and quietest values that we expect 
     # Need to test to find real values, use this for now 
-    max_amp = 1
-    min_amp = 0.5
+    max_amp = 0.8
+    min_amp = 0.4
     diff = max_amp - min_amp
-    shift_percent_values = []
+    shift_percent_values = [0.0, 0.0, 0.0, 0.0]
 
     # form the list of ordered mic amplitude shift values 
     for i, recording in enumerate(recordings_list):

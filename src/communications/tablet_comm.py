@@ -52,7 +52,7 @@ def send_shift_values(shift_values):
     try: 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
         sock.connect((TABLET_IP, 39439))
-        message = f"shift values,{shift_values[0]},{shift_values[1]},{shift_values[2]},{shift_values[3]}\n"
+        message = f"shift values,{shift_values[0]:.6f},{shift_values[1]:.6f},{shift_values[2]:.6f},{shift_values[3]:.6f}\n"
         sock.sendall(message.encode())
         sock.close()
         logging.info(f"[Send] Sent Shift Values: {message.strip()}")
