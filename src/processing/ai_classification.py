@@ -25,11 +25,10 @@ def classify_audio_sample(audio_sample):
     y=np.array(audio_sample)
     #perform mel spectrogram on audio sample
     mel_spectrogram = librosa.feature.melspectrogram(y=y, sr=sr, n_fft=4096, hop_length=1024, win_length=2048, n_mels=128)
-    log_mel_spectrogram = librosa.power_to_db(mel_spectrogram, ref=np.max)
-    log_mel_spectrogram = log_mel_spectrogram[:, 2:]
+    mel_spectrogram = mel_spectrogram[:, 2:]
 
     #reshape melSpec to fit required size, pass data into model
-    input_data = log_mel_spectrogram.reshape(input_shape).astype(np.float32)
+    input_data = mel_spectrogram.reshape(input_shape).astype(np.float32)
     interpreter.set_tensor(input_details[0]['index'], input_data)
 
     interpreter.invoke()
