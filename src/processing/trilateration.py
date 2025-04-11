@@ -14,8 +14,8 @@ def get_shift_percentages(recordings_list):
 
     # Scale values, these represent the loudest value and quietest values that we expect 
     # Need to test to find real values, use this for now 
-    max_amp = 0.8
-    min_amp = 0.4
+    max_amp = 0.9
+    min_amp = 0.2
     diff = max_amp - min_amp
     shift_percent_values = [0.0, 0.0, 0.0, 0.0]
 
