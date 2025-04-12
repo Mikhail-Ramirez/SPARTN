@@ -14,7 +14,7 @@ def get_shift_percentages(recordings_list):
 
     # Scale values, these represent the loudest value and quietest values that we expect 
     # Tested the system on 1 mic using this setup, results are decent. Further fine tuning 
-    # the values below: 
+    # needed for the values below: 
     max_amp = 0.9
     min_amp = 0.2
     diff = max_amp - min_amp
@@ -31,7 +31,8 @@ def get_shift_percentages(recordings_list):
             shift = 0.0
         else: 
             shift = (amp - min_amp) / diff   # Represetns the percentage to shift the location towards this mic
-            shift_percent_values[i] = shift
+        
+        shift_percent_values[i] = shift
 
     return shift_percent_values
 
