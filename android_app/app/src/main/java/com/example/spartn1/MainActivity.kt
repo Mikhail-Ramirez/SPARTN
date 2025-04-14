@@ -412,12 +412,12 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveQuadrant: Int, liveShiftVal
 
         // Highlight quadrant that drone is estimated to be in
         val quadrantColor = Color.Yellow
-        when (liveQuadrant) {
-            0 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, 0f), size = Size(w / 2, h / 2)) // Q1
-            1 -> drawRect(color = quadrantColor, topLeft = Offset(0f, 0f), size = Size(w / 2, h / 2))    // Q2
-            2 -> drawRect(color = quadrantColor, topLeft = Offset(0f, h / 2), size = Size(w / 2, h / 2)) // Q3
-            3 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, h / 2), size = Size(w / 2, h / 2)) // Q4
-        }
+//        when (liveQuadrant) {
+//            0 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, 0f), size = Size(w / 2, h / 2)) // Q1
+//            1 -> drawRect(color = quadrantColor, topLeft = Offset(0f, 0f), size = Size(w / 2, h / 2))    // Q2
+//            2 -> drawRect(color = quadrantColor, topLeft = Offset(0f, h / 2), size = Size(w / 2, h / 2)) // Q3
+//            3 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, h / 2), size = Size(w / 2, h / 2)) // Q4
+//        }
 
         translate(left = w / 2f, top = h / 2f) {
 
@@ -456,11 +456,11 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveQuadrant: Int, liveShiftVal
             // Calculate shift towards mic 1
             ly += liveShiftVals[0] * maxHeight
             // Calculate shift towards mic 2
-            lx += liveShiftVals[1] * maxWidth
+            lx += -liveShiftVals[1] * maxWidth
             // Calculate shift towards mic 3
             ly += -liveShiftVals[2] * maxHeight
             // Calculate shift towards mic 4
-            lx += -liveShiftVals[3] * maxWidth
+            lx += liveShiftVals[3] * maxWidth
 
             drawCircle(
                 color = Color.Red,
