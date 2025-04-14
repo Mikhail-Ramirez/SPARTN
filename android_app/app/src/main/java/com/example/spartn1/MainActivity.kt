@@ -221,10 +221,10 @@ fun MySplitScreen() {
 
                         TowerPlane(
                             coords = listOf(
-                                0f to 35f,     // Tower 1 (top-right)
-                                35f to 0f,     // Tower 2 (top-left)
-                                0f to -35f,    // Tower 3 (bottom-left)
-                                -35f to 0f     // Tower 4 (bottom-right)
+                                0f to 20f,     // Tower 1 (top-right)
+                                20f to 0f,     // Tower 2 (top-left)
+                                0f to -20f,    // Tower 3 (bottom-left)
+                                -20f to 0f     // Tower 4 (bottom-right)
                             ),
                             liveQuadrant = liveQuadrant.value,
                             liveShiftVals = liveShiftVals.value
@@ -448,8 +448,8 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveQuadrant: Int, liveShiftVal
                 )
             }
             // Draw the live estimated position as a red dot.
-            val maxWidth = 35f
-            val maxHeight = 35f
+            val maxWidth = 20f
+            val maxHeight = 20f
             var lx = 0f
             var ly = 0f
 
