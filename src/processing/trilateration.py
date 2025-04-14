@@ -15,8 +15,10 @@ def get_shift_percentages(recordings_list):
     # Scale values, these represent the loudest value and quietest values that we expect 
     # Tested the system on 1 mic using this setup, results are decent. Further fine tuning 
     # needed for the values below: 
-    max_amp = 0.75
-    min_amp = 0.1
+    # Vista Tech: 0.1, 0.75
+    # HolyStone: 0.3, 0.95
+    max_amp = 0.95
+    min_amp = 0.3
     diff = max_amp - min_amp
     shift_percent_values = [0.0, 0.0, 0.0, 0.0]
 
