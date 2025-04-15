@@ -36,6 +36,7 @@ import java.io.InputStreamReader
 import java.io.Serializable
 import java.net.*
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -412,12 +413,40 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveQuadrant: Int, liveShiftVal
 
         // Highlight quadrant that drone is estimated to be in
         val quadrantColor = Color.Yellow
-//        when (liveQuadrant) {
-//            0 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, 0f), size = Size(w / 2, h / 2)) // Q1
-//            1 -> drawRect(color = quadrantColor, topLeft = Offset(0f, 0f), size = Size(w / 2, h / 2))    // Q2
-//            2 -> drawRect(color = quadrantColor, topLeft = Offset(0f, h / 2), size = Size(w / 2, h / 2)) // Q3
-//            3 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, h / 2), size = Size(w / 2, h / 2)) // Q4
-//        }
+        val center = Offset(w / 2, h / 2)
+        val topLeft = Offset(0f, 0f)
+        val topRight = Offset(w, 0f)
+        val bottomLeft = Offset(0f, h)
+        val bottomRight = Offset(w, h)
+        val path = Path()
+
+        when (liveQuadrant) {
+            0 -> { // Bottom triangle
+                path.moveTo(center.x, center.y)
+                path.lineTo(bottomLeft.x, bottomLeft.y)
+                path.lineTo(bottomRight.x, bottomRight.y)
+                path.close()
+            }
+            1 -> { // Right triangle
+                path.moveTo(center.x, center.y)
+                path.lineTo(topRight.x, topRight.y)
+                path.lineTo(bottomRight.x, bottomRight.y)
+                path.close()
+            }
+            2 -> { // Top triangle
+                path.moveTo(center.x, center.y)
+                path.lineTo(topLeft.x, topLeft.y)
+                path.lineTo(topRight.x, topRight.y)
+                path.close()
+            }
+            3 -> { // Left triangle
+                path.moveTo(center.x, center.y)
+                path.lineTo(topLeft.x, topLeft.y)
+                path.lineTo(bottomLeft.x, bottomLeft.y)
+                path.close()
+            }
+        }
+        drawPath(path = path, color = quadrantColor)
 
         translate(left = w / 2f, top = h / 2f) {
 
@@ -453,14 +482,20 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveQuadrant: Int, liveShiftVal
             var lx = 0f
             var ly = 0f
 
+            // Fixed orientation assumed for tower locations:
+            //              3
+            //           4     2
+            //              1
+
+            // +x is right, +y is down
             // Calculate shift towards mic 1
             ly += liveShiftVals[0] * maxHeight
             // Calculate shift towards mic 2
-            lx += -liveShiftVals[1] * maxWidth
+            lx += liveShiftVals[1] * maxWidth
             // Calculate shift towards mic 3
             ly += -liveShiftVals[2] * maxHeight
             // Calculate shift towards mic 4
-            lx += liveShiftVals[3] * maxWidth
+            lx += -liveShiftVals[3] * maxWidth
 
             drawCircle(
                 color = Color.Red,

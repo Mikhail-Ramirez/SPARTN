@@ -15,10 +15,13 @@ def get_shift_percentages(recordings_list):
     # Scale values, these represent the loudest value and quietest values that we expect 
     # Tested the system on 1 mic using this setup, results are decent. Further fine tuning 
     # needed for the values below: 
+    # Values for center and at tower:
     # Vista Tech: 0.1, 0.75
     # HolyStone: 0.3, 0.95
-    max_amp = 0.95
-    min_amp = 0.3
+    # The minimum need to also account for diagonal zones where mics dont hear as well...
+    # Need to merge values to work best as possible with both drones:
+    max_amp = 0.82
+    min_amp = 0.07
     diff = max_amp - min_amp
     shift_percent_values = [0.0, 0.0, 0.0, 0.0]
 
