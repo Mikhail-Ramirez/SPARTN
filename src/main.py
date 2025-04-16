@@ -36,6 +36,7 @@ def main():
         for mic in MIC_ORDER
     }
     mic_buffers = {mic: recorders[mic].buffer for mic in MIC_ORDER}
+    time_diffs = []
 
     try:
         while True:
@@ -98,6 +99,8 @@ def main():
             # sleep_time = max(0, CHUNK_DURATION - elapsed)
             # time.sleep(sleep_time)
             print(f"{time.time() - prev_time}")
+            time_diffs.append(time.time() - prev_time)
+            print(sum(time_diffs) / len(time_diffs))
 
     except KeyboardInterrupt:
         logging.info("Main loop terminated by user.")
