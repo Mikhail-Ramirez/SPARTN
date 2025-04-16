@@ -41,6 +41,9 @@ def main():
     try:
         while True:
             prev_time = time.time()
+
+
+            # SAMPLING MICROPHONES+++++++++++++++++++++++++++++++++++++++++++++++
             # This is a checker that will not let any processing happen if the positions have not been set or sent to the configs
             if any(pos[0] is None or pos[1] is None for pos in MIC_POSITIONS.values()):
                     logging.info("[INFO] - Mic positions not yet fully defined. Waiting...")
@@ -58,7 +61,10 @@ def main():
                 logging.debug("All microphones silent. Skipping iteration.")
                 time.sleep(CHUNK_DURATION)
                 continue
+            # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
+            # OLD LOCATION (TDoA) METHOD +++++++++++++++++++++++++++++++++++++
             # DEBUG FOR SENDING
             # estimated_position, r1, r2 = get_loudest(recordings_list) , 0, 0
             # reference_mic, reordered_mics = None, None
@@ -68,7 +74,13 @@ def main():
             #     send_location(-3, -3)
             # elif estimated_position == 2:
             #     send_location(5, -5)
+            # Leave for now, change code below eventually... 
+            #estimated_position, r1, r2 = get_loudest(recordings_list) , 0, 0
+            #reference_mic, reordered_mics = None, None  
+            #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+
+            # NEW LOCATION METHOD++++++++++++++++++++++++++++++++++++++++++++
             # Send the list of shift percentages 
             shift_percent_values = get_shift_percentages(recordings_list)
             send_shift_values(shift_percent_values)
@@ -76,31 +88,30 @@ def main():
             # Send the index of the loudest mic as the loudest quadrant identifier
             estimated_quadrant = get_loudest(recordings_list)
             send_quadrant(estimated_quadrant)  
-            # Leave for now, change code below eventually... 
-            estimated_position, r1, r2 = get_loudest(recordings_list) , 0, 0
-            reference_mic, reordered_mics = None, None  
+            #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
             # Log the measurement to file with a timestamp
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             log_measurement(timestamp, reference_mic, reordered_mics, estimated_position, r1, r2)
             
+            # AI CLASSIFICAITON ++++++++++++++++++++++++++++++++++++++++++++++++++++++
             # Optional: Extract a 1-second audio sample and classify it using the AI system.
-            classification_result = "No Classification" 
-            classification_result = classify_audio_sample(recordings_list[0])
+            #classification_result = "No Classification" 
+            #classification_result = classify_audio_sample(recordings_list[0])
 
-            logging.info(f"AI Classification Result: {classification_result}")
-            send_classification(classification_result)
-            
+            #logging.info(f"AI Classification Result: {classification_result}")
+            #send_classification(classification_result)
+            # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+            # RF PROCESSING ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             # Optional: Start or process RF data if needed (this could be running on a separate thread)
             # start_rf_listener()
-            
-            # Maintain loop rate based on CHUNK_DURATION
-            #elapsed = time.time() - loop_start
-            # sleep_time = max(0, CHUNK_DURATION - elapsed)
-            # time.sleep(sleep_time)
-            print(f"{time.time() - prev_time}")
-            time_diffs.append(time.time() - prev_time)
-            print(sum(time_diffs) / len(time_diffs))
+            # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+            #print(f"{time.time() - prev_time}")
+            #time_diffs.append(time.time() - prev_time)
+            #print(sum(time_diffs) / len(time_diffs))
 
     except KeyboardInterrupt:
         logging.info("Main loop terminated by user.")

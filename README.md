@@ -171,10 +171,10 @@ The **Drone Detection Network (SPARTN - Sensor Platform for Acoustic and Radio T
 ---
 
 ## Gathered Average Operating frequencies after 5 mins of running
-- **Full System**:  0.792s
-- **Full System (Minus)**:  0.792s
-- **Full System**:  0.792s
-
+- **Full System**:  0.795s
+- **Full System (Just Location [Sampling])**:  0.540s
+- **Full System (Just AI[Sampling])**:  0.746s
+- **Full System (Just Sampling Microphones)**:  0.458s
 ---
 ---
 
