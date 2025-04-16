@@ -36,6 +36,7 @@ import java.io.InputStreamReader
 import java.io.Serializable
 import java.net.*
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Path
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -82,6 +83,9 @@ fun MySplitScreen() {
     // Live estimated quadrant from the Pi
     val liveQuadrant = remember { mutableIntStateOf(-1)}
 
+    // Live shift values
+    val liveShiftVals = remember { mutableStateOf(listOf(0f, 0f, 0f, 0f)) }
+
     // State for each tower’s mic connection (ALSA connection status).
     val tower2Connected = remember { mutableStateOf(false) }
     val tower3Connected = remember { mutableStateOf(false) }
@@ -119,6 +123,9 @@ fun MySplitScreen() {
                 },
                 onQuadrant = { quadrant ->
                     liveQuadrant.value = quadrant
+                },
+                onShiftVals = {shift_values ->
+                    liveShiftVals.value = shift_values
                 }
             )
         }
@@ -215,13 +222,13 @@ fun MySplitScreen() {
 
                         TowerPlane(
                             coords = listOf(
-                                5f to -5f,    // Tower 1 (top-right)
-                                -5f to -5f,   // Tower 2 (top-left)
-                                -5f to 5f,    // Tower 3 (bottom-left)
-                                5f to 5f      // Tower 4 (bottom-right)
+                                0f to 20f,     // Tower 1 (top-right)
+                                20f to 0f,     // Tower 2 (top-left)
+                                0f to -20f,    // Tower 3 (bottom-left)
+                                -20f to 0f     // Tower 4 (bottom-right)
                             ),
-                            liveCoord = liveCoord.value,
-                            liveQuadrant = liveQuadrant.value
+                            liveQuadrant = liveQuadrant.value,
+                            liveShiftVals = liveShiftVals.value
                         )
                     }
                 }
@@ -386,7 +393,7 @@ fun BlueScreen(
  * Draws the tower plane. Displays the towers using the provided coordinates and a red dot for liveCoord.
  */
 @Composable
-fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>, liveQuadrant: Int) {
+fun TowerPlane(coords: List<Pair<Float, Float>>, liveQuadrant: Int, liveShiftVals: List<Float>) {
     val scaleFactor = 10f  // This could be made dynamic based on the input extents.
     val context = LocalContext.current
     val towerBitmap: ImageBitmap = remember {
@@ -405,13 +412,41 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>, 
 
 
         // Highlight quadrant that drone is estimated to be in
-        val quadrantColor = Color.Red
+        val quadrantColor = Color.Yellow
+        val center = Offset(w / 2, h / 2)
+        val topLeft = Offset(0f, 0f)
+        val topRight = Offset(w, 0f)
+        val bottomLeft = Offset(0f, h)
+        val bottomRight = Offset(w, h)
+        val path = Path()
+
         when (liveQuadrant) {
-            0 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, 0f), size = Size(w / 2, h / 2)) // Q1
-            1 -> drawRect(color = quadrantColor, topLeft = Offset(0f, 0f), size = Size(w / 2, h / 2))    // Q2
-            2 -> drawRect(color = quadrantColor, topLeft = Offset(0f, h / 2), size = Size(w / 2, h / 2)) // Q3
-            3 -> drawRect(color = quadrantColor, topLeft = Offset(w / 2, h / 2), size = Size(w / 2, h / 2)) // Q4
+            0 -> { // Bottom triangle
+                path.moveTo(center.x, center.y)
+                path.lineTo(bottomLeft.x, bottomLeft.y)
+                path.lineTo(bottomRight.x, bottomRight.y)
+                path.close()
+            }
+            1 -> { // Right triangle
+                path.moveTo(center.x, center.y)
+                path.lineTo(topRight.x, topRight.y)
+                path.lineTo(bottomRight.x, bottomRight.y)
+                path.close()
+            }
+            2 -> { // Top triangle
+                path.moveTo(center.x, center.y)
+                path.lineTo(topLeft.x, topLeft.y)
+                path.lineTo(topRight.x, topRight.y)
+                path.close()
+            }
+            3 -> { // Left triangle
+                path.moveTo(center.x, center.y)
+                path.lineTo(topLeft.x, topLeft.y)
+                path.lineTo(bottomLeft.x, bottomLeft.y)
+                path.close()
+            }
         }
+        drawPath(path = path, color = quadrantColor)
 
         translate(left = w / 2f, top = h / 2f) {
 
@@ -441,13 +476,32 @@ fun TowerPlane(coords: List<Pair<Float, Float>>, liveCoord: Pair<Float, Float>, 
                     dstOffset = IntOffset(topLeft.x.toInt(), topLeft.y.toInt())
                 )
             }
-            // Draw the live position as a red dot.
-//            val (lx, ly) = liveCoord
-//            drawCircle(
-//                color = Color.Red,
-//                radius = 10f,
-//                center = Offset(lx * scaleFactor, ly * scaleFactor)
-//            )
+            // Draw the live estimated position as a red dot.
+            val maxWidth = 20f
+            val maxHeight = 20f
+            var lx = 0f
+            var ly = 0f
+
+            // Fixed orientation assumed for tower locations:
+            //              3
+            //           4     2
+            //              1
+
+            // +x is right, +y is down
+            // Calculate shift towards mic 1
+            ly += liveShiftVals[0] * maxHeight
+            // Calculate shift towards mic 2
+            lx += liveShiftVals[1] * maxWidth
+            // Calculate shift towards mic 3
+            ly += -liveShiftVals[2] * maxHeight
+            // Calculate shift towards mic 4
+            lx += -liveShiftVals[3] * maxWidth
+
+            drawCircle(
+                color = Color.Red,
+                radius = 10f,
+                center = Offset(lx * scaleFactor, ly * scaleFactor)
+            )
         }
     }
 }
@@ -486,7 +540,8 @@ fun startTcpServerForever(
     onCoord: (Float, Float) -> Unit,
     onMicConnected: (Int) -> Unit,
     OnClassifcation: (String) -> Unit,
-    onQuadrant: (Int) -> Unit
+    onQuadrant: (Int) -> Unit,
+    onShiftVals: (List<Float>) -> Unit
 ) {
     println("Starting TCP server on port $port for live updates and mic connection messages...")
     var server: ServerSocket? = null
@@ -535,6 +590,15 @@ fun startTcpServerForever(
                             onQuadrant(quadrant)
                         }
 
+                    }
+                    if (line.startsWith("shift values")) {
+                        // Receive 4 shift values
+                        val parts = line.split(",")
+                        if (parts.size == 5) {
+                            val shift_values = listOf(parts[1].toFloat(), parts[2].toFloat(),
+                                parts[3].toFloat(), parts[4].toFloat())
+                            onShiftVals(shift_values)
+                        }
                     }
                 }
                 println("Client disconnected.")

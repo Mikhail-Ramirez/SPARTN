@@ -4,6 +4,43 @@ from scipy.signal import correlate
 from config.settings import *
 
 
+def get_shift_percentages(recordings_list): 
+    """
+    Returns an ordered list of shift percentage values, calculated from mic amplitudes
+    relative to the scale of possible amplitude levels. 
+    """
+    import numpy as np
+    import logging
+
+    # Scale values, these represent the loudest value and quietest values that we expect 
+    # Tested the system on 1 mic using this setup, results are decent. Further fine tuning 
+    # needed for the values below: 
+    # Values for center and at tower:
+    # Vista Tech: 0.1, 0.75
+    # HolyStone: 0.3, 0.95
+    # The minimum need to also account for diagonal zones where mics dont hear as well...
+    # Need to merge values to work best as possible with both drones:
+    max_amp = 0.82
+    min_amp = 0.07
+    diff = max_amp - min_amp
+    shift_percent_values = [0.0, 0.0, 0.0, 0.0]
+
+    # form the list of ordered mic amplitude shift values 
+    for i, recording in enumerate(recordings_list):
+        amp = np.max(np.abs(recording)) # Current max amplitude of this mic 
+        logging.info(f"[Audio Analysis] Mic index {i}: max amplitude = {amp:.6f}")
+
+        if amp > max_amp:
+            shift = 1.0
+        elif amp < min_amp: 
+            shift = 0.0
+        else: 
+            shift = (amp - min_amp) / diff   # Represetns the percentage to shift the location towards this mic
+        
+        shift_percent_values[i] = shift
+
+    return shift_percent_values
+
 def get_loudest(recordings_list):
     """
     Returns the index of the microphone that recorded the loudest signal.

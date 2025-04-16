@@ -7,9 +7,9 @@ from config.settings import SAMPLE_RATE, WINDOW_DURATION, CHUNK_DURATION, MIC_OR
 
 # Import submodules for functionality using relative imports
 from .sensors.audio_recorder import ContinuousRecorder
-from .processing.trilateration import analyze_microphones, localize_source, get_loudest
+from .processing.trilateration import analyze_microphones, localize_source, get_loudest, get_shift_percentages
 from .communications.tower_config import tower_configuration_server
-from .communications.tablet_comm import send_location, send_classification, send_quadrant
+from .communications.tablet_comm import send_location, send_classification, send_quadrant, send_shift_values
 from .utils.logger import log_measurement
 from .processing.ai_classification import classify_audio_sample  # For AI audio analysis
 
@@ -36,6 +36,7 @@ def main():
         for mic in MIC_ORDER
     }
     mic_buffers = {mic: recorders[mic].buffer for mic in MIC_ORDER}
+    time_diffs = []
 
     try:
         while True:
@@ -68,6 +69,10 @@ def main():
             # elif estimated_position == 2:
             #     send_location(5, -5)
 
+            # Send the list of shift percentages 
+            shift_percent_values = get_shift_percentages(recordings_list)
+            send_shift_values(shift_percent_values)
+
             # Send the index of the loudest mic as the loudest quadrant identifier
             estimated_quadrant = get_loudest(recordings_list)
             send_quadrant(estimated_quadrant)  
@@ -94,6 +99,8 @@ def main():
             # sleep_time = max(0, CHUNK_DURATION - elapsed)
             # time.sleep(sleep_time)
             print(f"{time.time() - prev_time}")
+            time_diffs.append(time.time() - prev_time)
+            print(sum(time_diffs) / len(time_diffs))
 
     except KeyboardInterrupt:
         logging.info("Main loop terminated by user.")

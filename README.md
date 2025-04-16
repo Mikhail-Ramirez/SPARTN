@@ -170,6 +170,14 @@ The **Drone Detection Network (SPARTN - Sensor Platform for Acoustic and Radio T
 
 ---
 
+## Gathered Average Operating frequencies after 5 mins of running
+- **Full System**:  0.792s
+- **Full System (Minus)**:  0.792s
+- **Full System**:  0.792s
+
+---
+---
+
 ## Environmental and Societal Impacts
 - **Environmental Impact**: Minimal due to lightweight design and recyclable materials.
 - **Societal Impact**: Enhances safety and accountability in restricted airspaces.
