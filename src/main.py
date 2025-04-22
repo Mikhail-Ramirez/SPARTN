@@ -2,6 +2,9 @@
 import time
 import logging
 
+#Threading in an attempt to speed up processing values
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
+
 # Import configuration parameters
 from config.settings import SAMPLE_RATE, WINDOW_DURATION, CHUNK_DURATION, MIC_ORDER, MIC_POSITIONS
 
@@ -35,13 +38,17 @@ def main():
                                 chunk_duration=CHUNK_DURATION)
         for mic in MIC_ORDER
     }
-    mic_buffers = {mic: recorders[mic].buffer for mic in MIC_ORDER}
-    time_diffs = []
 
+    #mic_buffers = {mic: recorders[mic].buffer for mic in MIC_ORDER}
+    #time_diffs = []
+
+    # 3) Executors
+    record_executor = ThreadPoolExecutor(max_workers=len(MIC_ORDER))
+    # We only need two workers: one for shift‐computation, one for loudest
+    proc_executor   = ProcessPoolExecutor(max_workers=2)
     try:
         while True:
             prev_time = time.time()
-
 
             # SAMPLING MICROPHONES+++++++++++++++++++++++++++++++++++++++++++++++
             # This is a checker that will not let any processing happen if the positions have not been set or sent to the configs
@@ -49,52 +56,60 @@ def main():
                     logging.info("[INFO] - Mic positions not yet fully defined. Waiting...")
                     time.sleep(CHUNK_DURATION)
                     continue
-            loop_start = time.time()
 
-            # Update buffers from each recorder
-            for mic in MIC_ORDER:
-                mic_buffers[mic] = recorders[mic].update_buffer()
-            recordings_list = [mic_buffers[mic] for mic in MIC_ORDER]
+            # --- Parallel record/update ---
+            record_futures = {
+                record_executor.submit(rec.update_buffer): mic
+                for mic, rec in recorders.items()
+            }
+            mic_buffers = {}
+            for future in as_completed(record_futures):
+                mic = record_futures[future]
+                try:
+                    mic_buffers[mic] = future.result()
+                except Exception as e:
+                    logging.error(f"Mic {mic} update failed: {e}")
 
-            # Skip processing if all microphones are silent
-            if all(max(abs(r)) < 1e-3 for r in recordings_list):
-                logging.debug("All microphones silent. Skipping iteration.")
+            recordings = [mic_buffers[m] for m in MIC_ORDER]
+
+            # Skip if completely silent
+            if all(max(abs(r)) < 1e-3 for r in recordings):
+                logging.debug("Silence; skipping iteration.")
                 time.sleep(CHUNK_DURATION)
                 continue
-            # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+            # --- Parallel processing (CPU‐bound) ---
+            shift_fut   = proc_executor.submit(get_shift_percentages, recordings)
+            loudest_fut = proc_executor.submit(get_loudest, recordings)
+
+            shift_values       = shift_fut.result()
+            estimated_quadrant = loudest_fut.result()
+
+            # --- Send & log (I/O) ---
+            send_shift_values(shift_values)
+            send_quadrant(estimated_quadrant)
 
 
-            # OLD LOCATION (TDoA) METHOD +++++++++++++++++++++++++++++++++++++
-            # DEBUG FOR SENDING
-            # estimated_position, r1, r2 = get_loudest(recordings_list) , 0, 0
-            # reference_mic, reordered_mics = None, None
-            # if estimated_position == 0:
-            #     send_location(5, 5)
-            # elif estimated_position == 1:
-            #     send_location(-3, -3)
-            # elif estimated_position == 2:
-            #     send_location(5, -5)
-            # Leave for now, change code below eventually... 
-            #estimated_position, r1, r2 = get_loudest(recordings_list) , 0, 0
-            #reference_mic, reordered_mics = None, None  
-            #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
-            # NEW LOCATION METHOD++++++++++++++++++++++++++++++++++++++++++++
-            # Send the list of shift percentages 
-            shift_percent_values = get_shift_percentages(recordings_list)
-            send_shift_values(shift_percent_values)
-
-            # Send the index of the loudest mic as the loudest quadrant identifier
-            estimated_quadrant = get_loudest(recordings_list)
-            send_quadrant(estimated_quadrant)  
-            #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+            # LOGGING AND TIME ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             # Log the measurement to file with a timestamp
-            timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-            log_measurement(timestamp, reference_mic, reordered_mics, estimated_position, r1, r2)
-            
+            timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
+            # dummy placeholders for your old variables:
+            reference_mic, reordered_mics, r1, r2 = None, None, 0, 0
+            log_measurement(
+                timestamp, reference_mic,
+                reordered_mics, estimated_quadrant,
+                r1, r2
+            )
+
+            #print(f"{time.time() - prev_time}")
+            #time_diffs.append(time.time() - prev_time)
+            #print(sum(time_diffs) / len(time_diffs))
+            # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
             # AI CLASSIFICAITON ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
             # Optional: Extract a 1-second audio sample and classify it using the AI system.
             #classification_result = "No Classification" 
             #classification_result = classify_audio_sample(recordings_list[0])
@@ -108,10 +123,6 @@ def main():
             # start_rf_listener()
             # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
-            #print(f"{time.time() - prev_time}")
-            #time_diffs.append(time.time() - prev_time)
-            #print(sum(time_diffs) / len(time_diffs))
 
     except KeyboardInterrupt:
         logging.info("Main loop terminated by user.")
