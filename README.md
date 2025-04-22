@@ -157,17 +157,25 @@ The **Drone Detection Network (SPARTN - Sensor Platform for Acoustic and Radio T
 | 2                | Audio Signal Processing for TDOA         | 2/3/25             | Mikhail - Python code that correlates and gives a TDoA of each sound, but need more **testing** to verify. |
 | 3                | TDOA Algorithm Development               | 2/10/25            | Mikhail **implemented** in Python 1.30(Giving location predictions on 2.2) - Nick adapted to CPP 1/30.   Fidelity testing done on 2/11. Functionl implmentation with fidelity information attempted on 2/12. more testing fill follow.|
 | 4                | Directional Antenna Construction         | 2/17/25            | Fabricate directional antennas. RF **completed** as a group on 2.19. Audio **completed** as a group on 2.27 |
-| 5                | Antenna Integration                      | 2/24/25            | Integrate with existing systems. **(Missed)** |
+| 5                | Antenna Integration                      | 2/24/25            | **Completed** 4/10 by Dawson with 3D models and tower construction |
 | 6                | AI Audio Classification Model            | 3/3/25             | Real-time binary prediction **completed** in MATLAB by Nick on 2/5   |
-| 7                | Real-Time Audio Classification           | 3/10/25            | Implement live audio classification.      |
-| 8                | RF Spectrum Display on Tablet            | 3/17/25            | Add RF visualization to the UI.           |
-| 9                | Full System Communication Integration    | 3/24/25            | Include encrypted communication.          |
-| 10               | Real-Time Drone Location Display         | 3/31/25            | Complete tablet UI for location tracking. |
-| 11               | Classification Display on Tablet         | 4/7/25             | Enhance the tablet interface.             |
+| 7                | Real-Time Audio Classification           | 3/10/25            | Nick **completed** Audio AI classificaiton function and integratigration on 4/1 |
+| 8                | RF Spectrum Display on Tablet            | 3/17/25            |           |
+| 9                | Full System Communication Integration    | 3/24/25            |           |
+| 10               | Real-Time Drone Location Display         | 3/31/25            | **Complete** on 4/7 in combination with a pivot to location analysis and new tablet interface |
+| 11               | Classification Display on Tablet         | 4/7/25             | Tablet displays AI classifcation - **complete** 4/2 by Mikhail. Tyler implemented functional location display |
 | 12               | Real-Time System Processing              | 4/14/25            | Ensure all processes work seamlessly.     |
 | 13               | Comprehensive System Testing             | 4/21/25            | Evaluate all system components.           |
 | 14               | Demonstration Meeting Market Standards   | 4/28/25            | Final demonstration and evaluation.       |
 
+---
+
+## Gathered Average Operating frequencies after 5 mins of running
+- **Full System**:  0.792s
+- **Full System (Minus)**:  0.792s
+- **Full System**:  0.792s
+
+---
 ---
 
 ## Environmental and Societal Impacts

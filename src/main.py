@@ -7,9 +7,9 @@ from config.settings import SAMPLE_RATE, WINDOW_DURATION, CHUNK_DURATION, MIC_OR
 
 # Import submodules for functionality using relative imports
 from .sensors.audio_recorder import ContinuousRecorder
-from .processing.trilateration import analyze_microphones, localize_source
+from .processing.trilateration import analyze_microphones, localize_source, get_loudest, get_shift_percentages
 from .communications.tower_config import tower_configuration_server
-from .communications.tablet_comm import send_location, send_classification
+from .communications.tablet_comm import send_location, send_classification, send_quadrant, send_shift_values
 from .utils.logger import log_measurement
 from .processing.ai_classification import classify_audio_sample  # For AI audio analysis
 
@@ -36,9 +36,11 @@ def main():
         for mic in MIC_ORDER
     }
     mic_buffers = {mic: recorders[mic].buffer for mic in MIC_ORDER}
+    time_diffs = []
 
     try:
         while True:
+            prev_time = time.time()
             # This is a checker that will not let any processing happen if the positions have not been set or sent to the configs
             if any(pos[0] is None or pos[1] is None for pos in MIC_POSITIONS.values()):
                     logging.info("[INFO] - Mic positions not yet fully defined. Waiting...")
@@ -57,29 +59,34 @@ def main():
                 time.sleep(CHUNK_DURATION)
                 continue
 
-            # Determine the reference microphone using cross-correlation
-            reference_mic, reordered_mics, time_lags = analyze_microphones(recordings_list)
-
-            # Reorder recordings to match the mic order determined above
-           # recordings_ordered = [recordings_list[MIC_ORDER.index(mic)] for mic in reordered_mics]
-            # Calculate time lags between the reference and other microphones
-            #time_lags = cross_correlate(recordings_ordered, reordered_mics)
-            # Estimate the source location via trilateration
-            estimated_position, r1, r2 = localize_source(time_lags, reordered_mics)
-
-            #if estimated_position[0] is not None:
-            #    send_location(estimated_position[0], estimated_position[1])
             # DEBUG FOR SENDING
-            estimated_position, r1, r2 = 0, 0, 0
-            send_location(1, 1)
+            # estimated_position, r1, r2 = get_loudest(recordings_list) , 0, 0
+            # reference_mic, reordered_mics = None, None
+            # if estimated_position == 0:
+            #     send_location(5, 5)
+            # elif estimated_position == 1:
+            #     send_location(-3, -3)
+            # elif estimated_position == 2:
+            #     send_location(5, -5)
+
+            # Send the list of shift percentages 
+            shift_percent_values = get_shift_percentages(recordings_list)
+            send_shift_values(shift_percent_values)
+
+            # Send the index of the loudest mic as the loudest quadrant identifier
+            estimated_quadrant = get_loudest(recordings_list)
+            send_quadrant(estimated_quadrant)  
+            # Leave for now, change code below eventually... 
+            estimated_position, r1, r2 = get_loudest(recordings_list) , 0, 0
+            reference_mic, reordered_mics = None, None  
 
             # Log the measurement to file with a timestamp
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
             log_measurement(timestamp, reference_mic, reordered_mics, estimated_position, r1, r2)
             
             # Optional: Extract a 1-second audio sample and classify it using the AI system.
-            #classification_result = classify_audio_sample(recordings_ordered[0])
-            classification_result = "DummyDrone" 
+            classification_result = "No Classification" 
+            classification_result = classify_audio_sample(recordings_list[0])
 
             logging.info(f"AI Classification Result: {classification_result}")
             send_classification(classification_result)
@@ -88,9 +95,12 @@ def main():
             # start_rf_listener()
             
             # Maintain loop rate based on CHUNK_DURATION
-            elapsed = time.time() - loop_start
-            sleep_time = max(0, CHUNK_DURATION - elapsed)
-            time.sleep(sleep_time)
+            #elapsed = time.time() - loop_start
+            # sleep_time = max(0, CHUNK_DURATION - elapsed)
+            # time.sleep(sleep_time)
+            print(f"{time.time() - prev_time}")
+            time_diffs.append(time.time() - prev_time)
+            print(sum(time_diffs) / len(time_diffs))
 
     except KeyboardInterrupt:
         logging.info("Main loop terminated by user.")
