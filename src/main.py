@@ -45,7 +45,7 @@ def main():
     # 3) Executors
     record_executor = ThreadPoolExecutor(max_workers=len(MIC_ORDER))
     # We only need two workers: one for shift‐computation, one for loudest
-    proc_executor   = ProcessPoolExecutor(max_workers=2)
+    proc_executor   = ProcessPoolExecutor(max_workers=3)
     try:
         while True:
             prev_time = time.time()
@@ -89,6 +89,15 @@ def main():
             send_shift_values(shift_values)
             send_quadrant(estimated_quadrant)
 
+            # AI CLASSIFICAITON ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            classification_result = "No Classification"  #default for when no class
+
+            class_fut   = proc_executor.submit(classify_audio_sample, recordings_list[0])
+            classification_result = class_fut.result()
+
+            logging.info(f"AI Classification Result: {classification_result}")
+            send_classification(classification_result)
+            # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
             # LOGGING AND TIME ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -107,16 +116,6 @@ def main():
             #print(sum(time_diffs) / len(time_diffs))
             # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-            # AI CLASSIFICAITON ++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
-            # Optional: Extract a 1-second audio sample and classify it using the AI system.
-            #classification_result = "No Classification" 
-            #classification_result = classify_audio_sample(recordings_list[0])
-
-            #logging.info(f"AI Classification Result: {classification_result}")
-            #send_classification(classification_result)
-            # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
             # RF PROCESSING ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             # Optional: Start or process RF data if needed (this could be running on a separate thread)
