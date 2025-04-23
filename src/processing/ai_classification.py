@@ -9,7 +9,7 @@ import librosa
 import tflite_runtime.interpreter as tflite
 
 # Load TFLite model and allocate tensors.
-interpreter = tflite.Interpreter(model_path='src/processing/model.tflite')
+interpreter = tflite.Interpreter(model_path='src/processing/model_outdoors.tflite')
 interpreter.allocate_tensors()
 
 # Get input and output tensors.
