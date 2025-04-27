@@ -175,6 +175,8 @@ The **Drone Detection Network (SPARTN - Sensor Platform for Acoustic and Radio T
 - **Full System (Just Location [Sampling])**:  0.540s = 1.85Hz
 - **Full System (Just AI[Sampling])**:  0.746s = 1.34Hz
 - **Full System (Just Sampling Microphones)**:  0.458s = 2.18Hz
+--------------------------------------------------------------
+- **Full System (Threaded)**:  0.444s = 2.25Hz
 ---
 ---
 
