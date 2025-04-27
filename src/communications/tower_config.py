@@ -7,10 +7,11 @@ import numpy as np
 from config.settings import TOWER_CONFIG_PORT, MIC_ORDER, TABLET_IP, MIC_POSITIONS  # Ensure these are defined in your settings
 
 def configuration_complete():
-    complete = all(
-        (pos[0] is not None and pos[1] is not None) for pos in MIC_POSITIONS.values()
-    )
-    return complete
+#    complete = all(
+#        (pos[0] is not None and pos[1] is not None) for pos in MIC_POSITIONS.values()
+#    )
+    if TABLET_IP is not None:
+        return True # this means the IP has been set from the inital handshake therefore we can start sampling and sending to the ip
 
 
 def process_connection(conn):
@@ -33,34 +34,34 @@ def process_connection(conn):
                     conn.sendall((mic_indexes_str + "\n").encode())
                     logging.info(f"[Tower Config] Sent mic indexes: {mic_indexes_str}")
             # Process "sendLocation" messages which update a specific tower’s coordinate.
-            elif line.startswith("sendLocation"):
-                # Expected format: sendLocation,<micIndex>,<x>,<y>
-                parts = line.split(',')
-                if len(parts) != 4:
-                    logging.info(f"[Tower Config] Invalid sendLocation format: {line}")
-                    continue
-                try:
-                    mic_index = int(parts[1])
-                    x = float(parts[2])
-                    y = float(parts[3])
-                    MIC_POSITIONS[mic_index] = np.array((x, y))
-                    logging.info(f"[Tower Config] Updated tower coordinate for mic {mic_index}: ({x}, {y})")
-                except Exception as e:
-                    logging.info(f"[Tower Config] Error parsing sendLocation line '{line}': {e}")
-            # Process initial coordinate messages: "micIndex,x,y"
-            else:
-                parts = line.split(',')
-                if len(parts) != 3:
-                    logging.info(f"[Tower Config] Skipping invalid format: {line}")
-                    continue
-                try:
-                    mic_index = int(parts[0])
-                    x = float(parts[1])
-                    y = float(parts[2])
-                    MIC_POSITIONS[mic_index] = np.array((x, y))
-                    logging.info(f"[Tower Config] Received tower coordinate for mic {mic_index}: ({x}, {y})")
-                except Exception as e:
-                    logging.info(f"[Tower Config] Error parsing line '{line}': {e}")
+#            elif line.startswith("sendLocation"):
+#                # Expected format: sendLocation,<micIndex>,<x>,<y>
+#                parts = line.split(',')
+#                if len(parts) != 4:
+#                    logging.info(f"[Tower Config] Invalid sendLocation format: {line}")
+#                    continue
+#                try:
+#                    mic_index = int(parts[1])
+#                    x = float(parts[2])
+#                    y = float(parts[3])
+#                    MIC_POSITIONS[mic_index] = np.array((x, y))
+#                    logging.info(f"[Tower Config] Updated tower coordinate for mic {mic_index}: ({x}, {y})")
+#                except Exception as e:
+#                    logging.info(f"[Tower Config] Error parsing sendLocation line '{line}': {e}")
+#            # Process initial coordinate messages: "micIndex,x,y"
+#            else:
+#                parts = line.split(',')
+#                if len(parts) != 3:
+#                    logging.info(f"[Tower Config] Skipping invalid format: {line}")
+#                    continue
+#                try:
+#                    mic_index = int(parts[0])
+#                    x = float(parts[1])
+#                    y = float(parts[2])
+#                    MIC_POSITIONS[mic_index] = np.array((x, y))
+#                    logging.info(f"[Tower Config] Received tower coordinate for mic {mic_index}: ({x}, {y})")
+#                except Exception as e:
+#                    logging.info(f"[Tower Config] Error parsing line '{line}': {e}")
     except Exception as e:
         logging.info(f"[Tower Config] Error during connection processing: {e}")
     finally:

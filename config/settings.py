@@ -14,9 +14,9 @@ SPEED_OF_SOUND = 343         # m/s
 # Microphone positions (ALSA card numbers → Physical positions)
 MIC_POSITIONS = {
     # These need to be none for the init handshake to function
-    2: np.array([None, None]), # Mic2 
-    3: np.array([None, None]), # Mic3
-    4: np.array([None, None]), # Mic4
+    2: np.array([0, 0]), # Mic2 
+    3: np.array([0, 0]), # Mic3
+    4: np.array([0, 0]), # Mic4
     5: np.array([0, 0])  # Mic5     Should be the 4th mic ALSA value 
 }
 
@@ -31,4 +31,4 @@ LOG_FILE =f"data/{log_time}_log.log"
 TOWER_CONFIG_PORT = 39440
 
 # This will be set from the incoming tower configuration connection (i.e. the tablet's IP)
-TABLET_IP = "10.4.153.44" 
+TABLET_IP = None 
