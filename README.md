@@ -199,6 +199,18 @@ The **Drone Detection Network (SPARTN - Sensor Platform for Acoustic and Radio T
 
 ---
 
+## Directories
+- **.legacy**: The old files from the first semester.  Mikhail reorganized the GitHub into the current organization, but he left everything in .legacy in case if something from last semester needed to be found.
+- **MATLAB_AI**:  The files pertaining to the AI that identifies drones from dound data from the microphones.
+- **android_app**:  The files that run the android application.  Created with Android Studio.
+- **assets**:  Images and files we used for the project.  Includes the poster and progress reports!
+- **config**:  Contains the config information for the main program.
+- **data**:  The raw data from the experiments.
+- **experiments**: The programs Mikhail used for the experiments.
+- **src**:  The files that contain the code for the main program.
+
+---
+
 ## Conclusion
 The **SPARTN Drone Detection Network** offers an innovative, affordable, and portable solution to detecting and tracking drones in real-time. By combining RF and acoustic detection, the system provides a comprehensive tool for safeguarding civilian and military airspaces. Our future work will focus on refining detection accuracy, classification capabilities, and system reliability.
 
